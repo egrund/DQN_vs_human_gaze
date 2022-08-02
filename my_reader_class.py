@@ -20,6 +20,7 @@ class Reader :
 
 
     # getter and setter
+
     def get_number_frames(self):
         """ returns the number of frames """
 
@@ -29,6 +30,8 @@ class Reader :
         """returns the images of index i in trial"""
 
         return imread(self.images_dir + str(i) + ".png", pilmode = 'F')
+
+    # methods
 
     def plot_image(self,i):
         """plots images of index i in trial"""
@@ -53,8 +56,26 @@ class Reader :
         ax.set_ylim([y_dim_pic,0])
         plt.show()
 
-    def create_gaze_as_heatmap(self,i):
+    def create_gaze_heatmap(self,i):
         """ creates a heatmap out of the gaze data of frame i """
-        pass
+        
+        gaze_list = self.frameid2pos[self.frameid_list[i]]
+        image = self.get_image(i)
+        heatmap = np.zeros_like(image)
+        if gaze_list is not None and len(gaze_list) > 0:
+            for (x,y) in gaze_list:
+                heatmap[(int(x),min(209,int(y)))] += 1
+
+        heatmap = ndi.gaussian_filter(heatmap, sigma=10) # sigma should be one visual degree
+        return heatmap
+        
+    def plot_gaze_heatmap(self,i):
+        """plots a heatmap of the gaze data of one frame"""
+
+        heatmap = self.create_gaze_heatmap(i)
+        fig = plt.figure(figsize = (7, 7))
+        plt.imshow(heatmap, cmap = "jet")
+        plt.show()
+
 
 
