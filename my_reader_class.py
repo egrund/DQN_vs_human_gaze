@@ -23,8 +23,15 @@ class Reader :
         """scatters the gaze data of one frame i"""
 
         as_array = np.array(self.frameid2pos[self.frameid_list[i]])
-        # 160x210 picture size
-        plt.scatter(as_array[:,0], as_array[:,1])
+        x_dim_pic = 160
+        y_dim_pic = 210
+        
+        fig = plt.figure(figsize=(x_dim_pic/20,y_dim_pic/20))
+        ax = fig.add_subplot(1,1,1)
+        ax.scatter(as_array[:,0], as_array[:,1])
+        ax.set_xlim([0,x_dim_pic])
+        # (0,0) is supposed to be upper left
+        ax.set_ylim([y_dim_pic,0])
         plt.show()
 
     def create_gaze_as_heatmap(self,i):
