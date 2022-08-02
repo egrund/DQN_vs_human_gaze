@@ -2,4 +2,6 @@ from my_reader_class import Reader
 
 data = Reader()
 
-data.plot_gaze_heatmap(1)
+i = 1
+data.plot_gaze(i)
+data.plot_gaze_heatmap(i)

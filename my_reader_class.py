@@ -15,9 +15,8 @@ class Reader :
         self.frameid2pos, self.frameid2action, self.frameid2duration, self.frameid2unclipped_reward, self.frameid2episode, self.frameid2score, self.frameid_list = read_gaze(self.full_name + ".txt")
 
         self.images_dir = self.full_name + "_extracted/" + self.file_name[4:15]
-
-        print(self.images_dir)
-
+        self.x_dim_pic = 160
+        self.y_dim_pic = 210
 
     # getter and setter
 
@@ -44,30 +43,28 @@ class Reader :
     def plot_gaze(self,i):
         """scatters the gaze data of one frame i"""
 
-        as_array = np.array(self.frameid2pos[self.frameid_list[i]])
-        x_dim_pic = 160
-        y_dim_pic = 210
+        gaze_list = np.array(self.frameid2pos[self.frameid_list[i-1]])
         
-        fig = plt.figure(figsize=(x_dim_pic/20,y_dim_pic/20))
+        fig = plt.figure(figsize=(7,7))
         ax = fig.add_subplot(1,1,1)
-        ax.scatter(as_array[:,0], as_array[:,1])
-        ax.set_xlim([0,x_dim_pic])
+        ax.scatter(gaze_list[:,0], gaze_list[:,1])
+        ax.set_xlim([0,self.x_dim_pic])
         # (0,0) is supposed to be upper left
-        ax.set_ylim([y_dim_pic,0])
+        ax.set_ylim([self.y_dim_pic,0])
         plt.show()
 
     def create_gaze_heatmap(self,i):
         """ creates a heatmap out of the gaze data of frame i """
         
-        gaze_list = self.frameid2pos[self.frameid_list[i]]
+        gaze_list = self.frameid2pos[self.frameid_list[i-1]]
         image = self.get_image(i)
-        heatmap = np.zeros_like(image)
+        heatmap = np.zeros_like(image).T # transposed because we want dim 0 = x and dim 1 = y
         if gaze_list is not None and len(gaze_list) > 0:
             for (x,y) in gaze_list:
-                heatmap[(int(x),min(209,int(y)))] += 1
+                heatmap[min(self.x_dim_pic,int(x)) -1, min(self.y_dim_pic,int(y))-1] = 1
 
         heatmap = ndi.gaussian_filter(heatmap, sigma=10) # sigma should be one visual degree
-        return heatmap
+        return heatmap.T # so x is horizontal and y is vertical
         
     def plot_gaze_heatmap(self,i):
         """plots a heatmap of the gaze data of one frame"""
