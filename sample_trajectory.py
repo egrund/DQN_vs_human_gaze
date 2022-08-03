@@ -2,6 +2,7 @@ import tensorflow as tf
 import gym
 import random as rand
 import matplotlib as plt
+import threading, queue
 
 @tf.function
 def preprocess_image(image, imgx, imgy):
