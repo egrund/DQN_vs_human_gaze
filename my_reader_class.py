@@ -78,6 +78,15 @@ class Reader :
 
         heatmap = ndi.gaussian_filter(heatmap, sigma=10) # sigma should be one visual degree
         return heatmap.T # so x is horizontal and y is vertical
+
+    def create_all_gaze_heatmaps(self):
+        """ creates all the gaze heatmaps for the trial (for every frame) """
+
+        heatmaps = list()
+        for i in range(self.get_number_frames()):
+            heatmap = self.create_gaze_heatmap(i)
+            heatmaps.append(heatmap)
+        return heatmaps
         
     def plot_gaze_heatmap(self,i):
         """plots a heatmap of the gaze data of one frame"""
