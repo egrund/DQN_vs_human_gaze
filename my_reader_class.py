@@ -5,7 +5,23 @@ from imageio import imread
 from scipy import ndimage as ndi 
 
 class Reader :
-    """ gets a directory and a file to open a csv as txt file and reads in all the data by using data_reader.py """
+    """ gets a directory and a file to open a csv as txt file and reads in all the data by using data_reader.py 
+    
+    Attributes: 
+        file_dir (String): the csc (txt) file to open
+        images_dir (String): the folder where the images for the trial are
+        image_type (String): the image format e.g. .png or .jpg
+        x_dim_pic (int): amount of pixels in x direction of the image (horizontal)
+        y_dim_pic (int): amount of pixels in y direction of the image (vertical)
+
+        frameid_list (list): a list if all the frame ids (keys for the following dictionaries)
+        frameid2pos (dict): dictionary with list of all gaze positions for each frame (might be None)
+        frameid2action (dict): dictionary with all the actions taken for each frame
+        frameid2duration (dict): how long the person looked at the frame for each frame
+        frameid2unlclipped_reward (dict):
+        frameid2episode (dict):
+        frameid2score (dict): what the current score was in the frame
+    """
 
     def __init__(self,file_dir = "C:/Users/eosan/Documents/Gaze_Data/asterix/160_RZ_9166697_Feb-20-16-46-45.txt", images_dir = "C:/Users/eosan/Documents/Gaze_Data/asterix/160_RZ_9166697_Feb-20-16-46-45_extracted/", image_type = ".png"):
         self.file_dir = file_dir
