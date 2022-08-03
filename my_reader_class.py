@@ -7,16 +7,13 @@ from scipy import ndimage as ndi
 class Reader :
     """ gets a directory and a file to open a csv as txt file and reads in all the data by using data_reader.py """
 
-    def __init__(self,folder_dir = "C:/Users/eosan/Documents/Gaze_Data/asterix/", file_name = "160_RZ_9166697_Feb-20-16-46-45"):
-        self.folder_dir = folder_dir
-        self.file_name = file_name
-        self.full_name = folder_dir + file_name
-
-        self.frameid2pos, self.frameid2action, self.frameid2duration, self.frameid2unclipped_reward, self.frameid2episode, self.frameid2score, self.frameid_list = read_gaze(self.full_name + ".txt")
-
-        self.images_dir = self.full_name + "_extracted/" + self.file_name[4:15]
+    def __init__(self,file_dir = "C:/Users/eosan/Documents/Gaze_Data/asterix/160_RZ_9166697_Feb-20-16-46-45.txt", images_dir = "C:/Users/eosan/Documents/Gaze_Data/asterix/160_RZ_9166697_Feb-20-16-46-45_extracted/", image_type = ".png"):
+        self.file_dir = file_dir
+        self.images_dir = images_dir
         self.x_dim_pic = 160
         self.y_dim_pic = 210
+        self.image_type = image_type
+        self.frameid2pos, self.frameid2action, self.frameid2duration, self.frameid2unclipped_reward, self.frameid2episode, self.frameid2score, self.frameid_list = read_gaze(self.file_dir)
 
     # getter and setter
 
@@ -28,7 +25,7 @@ class Reader :
     def get_image(self,i):
         """returns the images of index i in trial"""
 
-        return imread(self.images_dir + str(i) + ".png", pilmode = 'F')
+        return imread(self.images_dir + self.frameid_list[i] + self.image_type, pilmode = 'F')
 
     # methods
 
