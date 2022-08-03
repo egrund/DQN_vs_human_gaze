@@ -85,6 +85,7 @@ buffer = []
 BUFFER_SIZE = 20000
 MIN_ELEMENTS_IN_BUFFER = 18000
 THREADS = 50
+epsilon = 1
 
 # https://stackoverflow.com/a/11968881/13798993
 # https://stackoverflow.com/a/2577254/13798993
@@ -95,7 +96,7 @@ while len(buffer)<MIN_ELEMENTS_IN_BUFFER:
     q = queue.Queue()
     threads = []
     for _ in range(THREADS):
-        thread = threading.Thread(target=create_trajectory_thread, args=(model, blurrer,False,epsilon,q))
+        thread = threading.Thread(target=create_trajectory_thread, args=(model,False,epsilon,q))
         threads.append(thread)
 
      # Start all threads
