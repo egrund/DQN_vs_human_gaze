@@ -57,6 +57,8 @@ class Reader :
         """returns a list of all gaze positions in frame i """
 
         gaze_list = self.frameid2pos[self.frameid_list[i-1]]
+        if(gaze_list == None):
+            return []
         return gaze_list
 
     def plot_gaze(self,i):
