@@ -1,7 +1,8 @@
 # Gaze prediction network following Zhang et al. (2019)
 
 from tensorflow.keras import Model
-from tensorflow.keras.layers import Conv2D, Conv2DTranspose, Dense, BatchNormalization, Softmax
+from tensorflow.keras.layers import Conv2D, Conv2DTranspose, \
+BatchNormalization, Softmax, MaxPooling2D
 from tensorflow.keras.losses import KLDivergence
 from tensorflow.keras.optimizers import Adam
 
@@ -13,14 +14,16 @@ class GazePrediction(Model):
                                 padding="valid", activation='relu')
         self.conv2     = Conv2D(filters=64, kernel_size=(4, 4), strides=2,
                                 padding="valid", activation='relu')
+#         self.pool1     = MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid")
         self.conv3     = Conv2D(filters=64, kernel_size=(3, 3), strides=1,
                                 padding="valid", activation='relu')
+#         self.pool2     = MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid")
 
         self.deconv1   = Conv2DTranspose(filters=64, kernel_size=(3, 3), strides=1,
                                 padding="valid", activation='relu')
-        self.deconv2   = Conv2DTranspose(filters=64, kernel_size=(4, 4), strides=2,
+        self.deconv2   = Conv2DTranspose(filters=32, kernel_size=(4, 4), strides=2,
                                 padding="valid", activation='relu')
-        self.deconv3   = Conv2DTranspose(filters=32, kernel_size=(8, 8), strides=4,
+        self.deconv3   = Conv2DTranspose(filters=1, kernel_size=(8, 8), strides=4,
                                 padding="valid", activation='relu')
         self.softmax   = Softmax(axis=-1)
 
@@ -30,7 +33,9 @@ class GazePrediction(Model):
     def call(self, obs, training=True):
         output = self.conv1(obs, training=training)
         output = self.conv2(output, training=training)
+#         output = self.pool1(output, training=training)
         output = self.conv3(output, training=training)
+#         output = self.pool2(output, training=training)
 
         output = self.deconv1(output, training=training)
         output = self.deconv2(output, training=training)
