@@ -38,25 +38,31 @@ class Reader :
 
         return len(self.frameid_list)
 
-    def get_image(self,i):
+    def get_image(self,i,mode='RGB'):
         """returns the images of index i in trial"""
 
-        return imread(self.images_dir + self.frameid_list[i] + self.image_type, pilmode = 'F')
+        return imread(self.images_dir + self.frameid_list[i] + self.image_type, pilmode = mode)
 
     # methods
 
     def plot_image(self,i):
         """plots images of index i in trial"""
 
-        image = self.get_image(i)
+        image = self.get_image(i,'F')
         fig = plt.figure(figsize = (7,7))
         plt.imshow(image,cmap = 'gray')
         plt.show()
 
+    def get_gaze(self,i,):
+        """returns a list of all gaze positions in frame i """
+
+        gaze_list = self.frameid2pos[self.frameid_list[i-1]]
+        return gaze_list
+
     def plot_gaze(self,i):
         """scatters the gaze data of one frame i"""
 
-        gaze_list = np.array(self.frameid2pos[self.frameid_list[i-1]])
+        gaze_list = np.array(self.get_gaze(i))
         
         fig = plt.figure(figsize=(7,7))
         ax = fig.add_subplot(1,1,1)
@@ -69,8 +75,8 @@ class Reader :
     def create_gaze_heatmap(self,i):
         """ creates a heatmap out of the gaze data of frame i """
         
-        gaze_list = self.frameid2pos[self.frameid_list[i-1]]
-        image = self.get_image(i)
+        gaze_list = self.get_gaze(i)
+        image = self.get_image(i,'F')
         heatmap = np.zeros_like(image).T # transposed because we want dim 0 = x and dim 1 = y
         if gaze_list is not None and len(gaze_list) > 0:
             for (x,y) in gaze_list:
