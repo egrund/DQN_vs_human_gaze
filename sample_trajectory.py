@@ -81,36 +81,36 @@ def create_trajectory_thread(model,render,epsilon,q):
     s_a_r_s = create_trajectory(model,render,epsilon)
     q.put(s_a_r_s)
  
+if __name__ == '__main__':
+    buffer = []
+    BUFFER_SIZE = 20000
+    MIN_ELEMENTS_IN_BUFFER = 18000
+    THREADS = 50
+    epsilon = 1
 
-buffer = []
-BUFFER_SIZE = 20000
-MIN_ELEMENTS_IN_BUFFER = 18000
-THREADS = 50
-epsilon = 1
+    # https://stackoverflow.com/a/11968881/13798993
+    # https://stackoverflow.com/a/2577254/13798993
+    # https://stackoverflow.com/a/59425508/13798993
+    while len(buffer)<MIN_ELEMENTS_IN_BUFFER:
 
-# https://stackoverflow.com/a/11968881/13798993
-# https://stackoverflow.com/a/2577254/13798993
-# https://stackoverflow.com/a/59425508/13798993
-while len(buffer)<MIN_ELEMENTS_IN_BUFFER:
+        print("Filling buffer: ", len(buffer))
+        q = queue.Queue()
+        threads = []
+        for _ in range(THREADS):
+            thread = threading.Thread(target=create_trajectory_thread, args=(agent,False,epsilon,q))
+            threads.append(thread)
 
-    print("Filling buffer: ", len(buffer))
-    q = queue.Queue()
-    threads = []
-    for _ in range(THREADS):
-        thread = threading.Thread(target=create_trajectory_thread, args=(model,False,epsilon,q))
-        threads.append(thread)
+         # Start all threads
+        for x in threads:
+            x.start()
 
-     # Start all threads
-    for x in threads:
-        x.start()
+        # Wait for all of them to finish
+        for x in threads:
+            x.join()
 
-    # Wait for all of them to finish
-    for x in threads:
-        x.join()
+        for elem in q.queue:
+            buffer.extend(elem)
 
-    for elem in q.queue:
-        buffer.extend(elem)
-
-# remove old data from replay buffer if too many alements are in it
-while len(buffer)>BUFFER_SIZE:
-    buffer = buffer[1:]
+    # remove old data from replay buffer if too many alements are in it
+    while len(buffer)>BUFFER_SIZE:
+        buffer = buffer[1:]
