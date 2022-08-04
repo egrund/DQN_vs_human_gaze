@@ -1,7 +1,7 @@
 from data_reader import read_gaze_data_csv_file as read_gaze
 import numpy as np
 import matplotlib.pyplot as plt
-from imageio import imread
+from imageio.v2 import imread
 from scipy import ndimage as ndi 
 
 class Reader :
