@@ -286,3 +286,14 @@ def convergence_check(model, attributions, baseline, input, target_class_idx):
     tf.print('Input score: {:.3f}'.format(input_score))
     tf.print('IG score: {:.3f}'.format(ig_score))     
     tf.print('Convergence delta: {:.3f}'.format(delta))
+
+
+if __name__ == '__main__':
+
+    # images is used for the shape
+    baseline = create_baseline(image, mode='Black')
+
+    # y_index is the index at which is the correct index of y (the unit which should have the biggest output in the model)
+    integrated_gradients = integrated_gradients(model,baseline,image,y_index)
+
+    
