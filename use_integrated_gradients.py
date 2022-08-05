@@ -1,10 +1,9 @@
 import integrated_gradients as ig 
 from my_reader_class import Reader
 from sample_trajectory import preprocess_image
-from utility import import_tensorflow
 from dqn import DQN
 
-tf = import_tensorflow()
+import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 
