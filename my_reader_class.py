@@ -43,6 +43,18 @@ class Reader :
 
         return imread(self.images_dir + self.frameid_list[i] + self.image_type, pilmode = mode)
 
+    def get_gaze(self,i):
+        """returns a list of all gaze positions in frame i """
+
+        gaze_list = self.frameid2pos[self.frameid_list[i-1]]
+        if(gaze_list == None):
+            return []
+        return gaze_list
+
+    def get_action(self,i):
+        """returns action of frame i """
+        return self.frameid2action[self.frameid_list[i-1]]
+
     # methods
 
     def plot_image(self,i):
@@ -52,14 +64,6 @@ class Reader :
         fig = plt.figure(figsize = (7,7))
         plt.imshow(image,cmap = 'gray')
         plt.show()
-
-    def get_gaze(self,i,):
-        """returns a list of all gaze positions in frame i """
-
-        gaze_list = self.frameid2pos[self.frameid_list[i-1]]
-        if(gaze_list == None):
-            return []
-        return gaze_list
 
     def plot_gaze(self,i):
         """scatters the gaze data of one frame i"""
