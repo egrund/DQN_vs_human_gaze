@@ -68,7 +68,10 @@ class Reader :
     def plot_gaze(self,i):
         """scatters the gaze data of one frame i"""
 
-        gaze_list = np.array(self.get_gaze(i))
+        gaze = self.get_gaze(i)
+        if(gaze == None):
+            return
+        gaze_list = np.array(gaze)
         
         fig = plt.figure(figsize=(7,7))
         ax = fig.add_subplot(1,1,1)
@@ -81,7 +84,9 @@ class Reader :
     def create_gaze_heatmap(self,i):
         """ creates a heatmap out of the gaze data of frame i """
         
-        gaze_list = self.get_gaze(i)
+        gaze = self.get_gaze(i)
+        if(gaze == None):
+            return None
         image = self.get_image(i,'F')
         heatmap = np.zeros_like(image).T # transposed because we want dim 0 = x and dim 1 = y
         if gaze_list is not None and len(gaze_list) > 0:
@@ -104,6 +109,8 @@ class Reader :
         """plots a heatmap of the gaze data of one frame"""
 
         heatmap = self.create_gaze_heatmap(i)
+        if(heatmap == None):
+            return
         fig = plt.figure(figsize = (7, 7))
         plt.imshow(heatmap, cmap = "jet")
         plt.show()
