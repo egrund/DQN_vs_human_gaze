@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 FRAME_SKIPS = 4
 I = 500 # index of frame (1 to data.get_number_frames())
 MODE = 'blurred'
+SIGMA = 8 # size of perturbation
 
 data = Reader() #file_dir = , images_dir = ) # add path of txt file and 
 model = DQN(9)
@@ -18,7 +19,7 @@ model(tf.random.uniform(shape=(1,84,84,4)),training = False)
 #model.load_weights() # add path
 
 original_image = tf.convert_to_tensor(data.get_image(I))
-image = preprocess_image(original_image,84,84)
+image = preprocess_image(tf.convert_to_tensor(original_image),84,84)
 observation = tf.repeat(image,FRAME_SKIPS,axis=-1) # model gets several times the same image
 
 q_vals = tf.squeeze(model(tf.expand_dims(observation,axis=0),training = False),axis=0)
@@ -26,7 +27,7 @@ action = tf.argmax(q_vals).numpy()
 
 # do perturbation based saliency 
 
-masks = pert.create_masks(image) # one mask for every pixel
+masks = pert.create_masks(image,sigma=SIGMA) # one mask for every pixel
 saliency = np.zeros(shape=(len(masks)))
 p_image_plot = None
 
@@ -51,7 +52,7 @@ axs[0,0].set_title('Original Image')
 axs[0,0].imshow(original_image, cmap = 'gray')
 axs[0,0].axis('off')
 
-axs[0,1].set_title('Perturbed Image example')
+axs[0,1].set_title('Perturbed Image example (also preprocessed already)')
 axs[0,1].imshow(pert.image_to_size(p_image_plot), cmap = 'gray')
 axs[0,1].axis('off') 
 
@@ -59,7 +60,7 @@ axs[1,0].set_title('Saliency')
 axs[1,0].imshow(pert.image_to_size(saliency), cmap=plt.cm.inferno)
 axs[1,0].axis('off')  
 
-axs[1,1].set_title('Original + IG Attribution Mask Overlay')
+axs[1,1].set_title('Original Image + Saliency')
 axs[1,1].imshow(pert.image_to_size(saliency), cmap=plt.cm.inferno)
 axs[1,1].imshow(original_image, cmap = 'gray', alpha=0.5)
 axs[1,1].axis('off')
