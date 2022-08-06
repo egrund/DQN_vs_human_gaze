@@ -84,8 +84,8 @@ class Reader :
     def create_gaze_heatmap(self,i):
         """ creates a heatmap out of the gaze data of frame i """
         
-        gaze = self.get_gaze(i)
-        if(gaze == None):
+        gaze_list = self.get_gaze(i)
+        if(gaze_list == None):
             return None
         image = self.get_image(i,'F')
         heatmap = np.zeros_like(image).T # transposed because we want dim 0 = x and dim 1 = y
