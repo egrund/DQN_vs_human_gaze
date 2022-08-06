@@ -2,7 +2,7 @@
 
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Conv2D, Conv2DTranspose, \
-BatchNormalization, Softmax, MaxPooling2D
+Dense, BatchNormalization, Softmax, MaxPooling2D
 from tensorflow.keras.losses import KLDivergence
 from tensorflow.keras.optimizers import Adam
 
@@ -25,12 +25,10 @@ class GazePrediction(Model):
                                 padding="valid", activation='relu')
         self.deconv3   = Conv2DTranspose(filters=1, kernel_size=(8, 8), strides=4,
                                 padding="valid", activation='relu')
-        self.softmax   = Softmax(axis=-1)
-
-        self.optimiser = Adam(learning_rate=learning_rate, amsgrad=True)
-        self.loss_fn   = KLDivergence()
+        self.softmax   = Softmax(axis=2)
 
     def call(self, obs, training=True):
+        obs = obs / 0xFF
         output = self.conv1(obs, training=training)
         output = self.conv2(output, training=training)
 #         output = self.pool1(output, training=training)
