@@ -50,3 +50,14 @@ def array_to_dict(array):
     for i,v in enumerate(array):
         dict[i] = v
     return dict
+
+def image_to_size(image,y=160,x=210):
+    """ reshapes the image to a given size 
+    
+    Arguments: 
+        image (Tensor)
+        y = horizontal size
+        x = vertical size
+    """
+    image = tf.image.resize(image,size=(x,y))
+    return image

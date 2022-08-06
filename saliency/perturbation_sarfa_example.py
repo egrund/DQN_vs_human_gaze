@@ -3,8 +3,8 @@ from my_reader_class import Reader
 from sample_trajectory import preprocess_image
 from dqn import DQN
 from sarfa_saliency import computeSaliencyUsingSarfa
-import numpy as np
 
+import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
@@ -17,7 +17,8 @@ model = DQN(9)
 model(tf.random.uniform(shape=(1,84,84,4)),training = False)
 #model.load_weights() # add path
 
-image = preprocess_image(tf.convert_to_tensor(data.get_image(I)),84,84)
+original_image = tf.convert_to_tensor(data.get_image(I))
+image = preprocess_image(original_image,84,84)
 observation = tf.repeat(image,FRAME_SKIPS,axis=-1) # model gets several times the same image
 
 q_vals = tf.squeeze(model(tf.expand_dims(observation,axis=0),training = False),axis=0)
@@ -47,20 +48,20 @@ saliency = tf.reshape(saliency,shape=image.shape)
 fig, axs = plt.subplots(nrows=2, ncols=2, squeeze=False, figsize=(8, 8))
 
 axs[0,0].set_title('Original Image')
-axs[0,0].imshow(image, cmap = 'gray')
+axs[0,0].imshow(original_image, cmap = 'gray')
 axs[0,0].axis('off')
 
 axs[0,1].set_title('Perturbed Image example')
-axs[0,1].imshow(p_image_plot, cmap = 'gray')
+axs[0,1].imshow(pert.image_to_size(p_image_plot), cmap = 'gray')
 axs[0,1].axis('off') 
 
 axs[1,0].set_title('Saliency')
-axs[1,0].imshow(saliency, cmap=plt.cm.inferno)
+axs[1,0].imshow(pert.image_to_size(saliency), cmap=plt.cm.inferno)
 axs[1,0].axis('off')  
 
 axs[1,1].set_title('Original + IG Attribution Mask Overlay')
-axs[1,1].imshow(saliency, cmap=plt.cm.inferno)
-axs[1,1].imshow(image, cmap = 'gray', alpha=0.4)
+axs[1,1].imshow(pert.image_to_size(saliency), cmap=plt.cm.inferno)
+axs[1,1].imshow(original_image, cmap = 'gray', alpha=0.5)
 axs[1,1].axis('off')
 
 plt.tight_layout()

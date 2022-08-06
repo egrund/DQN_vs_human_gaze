@@ -8,8 +8,8 @@ class Reader :
     """ gets a directory and a file to open a csv as txt file and reads in all the data by using data_reader.py 
     
     Attributes: 
-        file_dir (String): the csc (txt) file to open
-        images_dir (String): the folder where the images for the trial are
+        file_dir (String: "path/file" ): the csc (txt) file to open
+        images_dir (String: "path"): the folder where the images for the trial are
         image_type (String): the image format e.g. .png or .jpg
         x_dim_pic (int): amount of pixels in x direction of the image (horizontal)
         y_dim_pic (int): amount of pixels in y direction of the image (vertical)
