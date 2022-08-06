@@ -81,20 +81,35 @@ class Reader :
         ax.set_ylim([self.y_dim_pic,0])
         plt.show()
 
-    def create_gaze_heatmap(self,i):
-        """ creates a heatmap out of the gaze data of frame i """
-        
+    def create_gaze_map(self,i):
+        """ creates a map with 0 everywhere and 1 where the gaze is (rounded) """
+
         gaze_list = self.get_gaze(i)
         if(gaze_list == None):
             return None
         image = self.get_image(i,'F')
-        heatmap = np.zeros_like(image).T # transposed because we want dim 0 = x and dim 1 = y
+        gaze_map = np.zeros(shape=(self.x_dim_pic,self.y_dim_pic)).T # transposed because we want dim 0 = x and dim 1 = y
         if gaze_list is not None and len(gaze_list) > 0:
             for (x,y) in gaze_list:
-                heatmap[min(self.x_dim_pic,int(x)) -1, min(self.y_dim_pic,int(y))-1] = 1
+                gaze_map[min(self.x_dim_pic,int(x)) -1, min(self.y_dim_pic,int(y))-1] = 1
+        return gaze_map.T
 
+    def create_all_gaze_maps(self):
+        """ creates all the gaze maps for the trial (for every frame) """
+        gaze_maps = list() 
+        for i in range(self.get_number_frames()):
+            map = self.create_gaze_map(i)
+            gaze_maps.append(map)
+        return gaze_maps
+
+    def create_gaze_heatmap(self,i):
+        """ creates a heatmap out of the gaze data of frame i """
+        
+        heatmap = self.create_gaze_map(i)
+        if heatmap == None:
+            return None
         heatmap = ndi.gaussian_filter(heatmap, sigma=10) # sigma should be one visual degree
-        return heatmap.T # so x is horizontal and y is vertical
+        return heatmap 
 
     def create_all_gaze_heatmaps(self):
         """ creates all the gaze heatmaps for the trial (for every frame) """
@@ -114,6 +129,3 @@ class Reader :
         fig = plt.figure(figsize = (7, 7))
         plt.imshow(heatmap, cmap = "jet")
         plt.show()
-
-
-
