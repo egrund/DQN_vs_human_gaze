@@ -88,7 +88,7 @@ class Reader :
         if(gaze_list == None):
             return None
         image = self.get_image(i,'F')
-        gaze_map = np.zeros(shape=(self.x_dim_pic,self.y_dim_pic)).T # transposed because we want dim 0 = x and dim 1 = y
+        gaze_map = np.zeros_like(image).T # transposed because we want dim 0 = x and dim 1 = y
         if gaze_list is not None and len(gaze_list) > 0:
             for (x,y) in gaze_list:
                 gaze_map[min(self.x_dim_pic,int(x)) -1, min(self.y_dim_pic,int(y))-1] = 1
@@ -106,8 +106,6 @@ class Reader :
         """ creates a heatmap out of the gaze data of frame i """
         
         heatmap = self.create_gaze_map(i)
-        if heatmap == None:
-            return None
         heatmap = ndi.gaussian_filter(heatmap, sigma=10) # sigma should be one visual degree
         return heatmap 
 
