@@ -60,9 +60,7 @@ def image_to_size(image,y=160,x=210):
         y = horizontal size
         x = vertical size
     """
-    if len(image.shape) >2 : 
-        image = tf.squeeze(image, axis=-1)
-        
+
     image = tf.image.resize(image,size=(x,y))
     return image
 

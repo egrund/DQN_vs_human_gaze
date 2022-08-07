@@ -40,7 +40,7 @@ def saliency_information_gain(fixation_map, saliency,epsilon=0.1):
     n = tf.reshape(fixation_map,[-1]).shape[0]
 
     # calculation
-    information_gain = ( 1/n ) * tf.reduce_sum(tf.multiply(tf.squeeze(fixation_map,axis=-1),log_saliency - log_prior))
+    information_gain = ( 1/n ) * tf.reduce_sum(tf.multiply(fixation_map,log_saliency - log_prior))
     return information_gain.numpy()
     
 def create_center_prior_baseline(map):
@@ -51,6 +51,3 @@ def create_center_prior_baseline(map):
     base[center_x,center_y] = 1
     base = ndi.gaussian_filter(base, sigma = 10) # compare my_reader_class.create_gaze_heatmap
     return base
-
-
-
