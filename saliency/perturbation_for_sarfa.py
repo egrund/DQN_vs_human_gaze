@@ -1,4 +1,3 @@
-import perturbation_for_sarfa as pert
 from sarfa_saliency import computeSaliencyUsingSarfa
 import numpy as np
 from scipy import ndimage as ndi 
@@ -61,10 +60,13 @@ def image_to_size(image,y=160,x=210):
         y = horizontal size
         x = vertical size
     """
+    if len(image.shape) >2 : 
+        image = tf.squeeze(image, axis=-1)
+        
     image = tf.image.resize(image,size=(x,y))
     return image
 
-def calc_saliency_for_image(image, model, mode = 'blurred',sigma = 8, frame_skips = 4):
+def calc_sarfa_saliency_for_image(image, model, mode = 'blurred',sigma = 8, frame_skips = 4):
     """ calculates the saliency for an whole image 
     
     Arguments: 
@@ -79,19 +81,18 @@ def calc_saliency_for_image(image, model, mode = 'blurred',sigma = 8, frame_skip
     q_vals = tf.squeeze(model(tf.expand_dims(observation,axis=0),training = False),axis=0)
     action = tf.argmax(q_vals).numpy()
 
-    masks = pert.create_masks(image,sigma=sigma) # one mask for every pixel
+    masks = create_masks(image,sigma=sigma) # one mask for every pixel
     saliency = np.zeros(shape=(len(masks)))
     perturbed_example_image = None
 
     for i,mask in enumerate(masks):
-        p_image = tf.convert_to_tensor(pert.perturb_image(image.numpy(),mask, mode=mode))
+        p_image = tf.convert_to_tensor(perturb_image(image.numpy(),mask, mode=mode))
         if(i==3570): # middel pixel 84 * 42 + 42
             perturbed_example_image = p_image
         observation = tf.repeat(p_image,frame_skips,axis=-1) # model gets several times the same image
 
         p_q_vals = tf.squeeze(model(tf.expand_dims(observation,axis=0),training = False),axis = 0)
-
-        sal,_,_,_,_,_ = computeSaliencyUsingSarfa(action,pert.array_to_dict(q_vals.numpy()),pert.array_to_dict(p_q_vals.numpy()))
+        sal,_,_,_,_,_ = computeSaliencyUsingSarfa(action,array_to_dict(q_vals.numpy()),array_to_dict(p_q_vals.numpy()))
         saliency[i] = sal
 
     saliency = tf.reshape(saliency,shape=image.shape)
