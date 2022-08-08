@@ -2,7 +2,7 @@ from my_reader_class import Reader
 import heatmap_comparison as compare 
 import perturbation_for_sarfa as pert
 from sample_trajectory import preprocess_image
-from dqn import DQN
+from dqn import DQN_model
 from sarfa_saliency import computeSaliencyUsingSarfa
 
 import matplotlib.pyplot as plt
@@ -31,12 +31,12 @@ plt.show()
 I = 500
 MODE = 'blurred'
 heatmap = data.create_gaze_heatmap(I)
-model = DQN(9)
+model = DQN_model(9)
 model(tf.random.uniform(shape=(1,84,84,4)),training = False)
 #model.load_weights() # add path
-original_image = tf.convert_to_tensor(data.get_image(I))
-image = preprocess_image(original_image,84,84)
-saliency, perturbed_image = pert.calc_saliency_for_image(image,model,mode=MODE)
+
+image = preprocess_image(tf.convert_to_tensor(data.get_image(I)),84,84)
+saliency, perturbed_image = pert.calc_sarfa_saliency_for_image(image,model,mode=MODE)
 saliency = pert.image_to_size(saliency)
 
 auc, map1, map2 = compare.heatmap_comparison_using_AUC(heatmap, saliency)
