@@ -2,40 +2,49 @@
 
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Conv2D, Conv2DTranspose, \
-Dense, BatchNormalization, Softmax, MaxPooling2D
-from tensorflow.keras.losses import KLDivergence
-from tensorflow.keras.optimizers import Adam
+BatchNormalization, Softmax, MaxPooling2D
 
 class GazePrediction(Model):
-    def __init__(self, env, learning_rate=1e-3, frame_stack=4):
+    def __init__(self, env, frame_stack=4):
         super().__init__()
         input_channels = frame_stack
+        self.norm1     = BatchNormalization()
         self.conv1     = Conv2D(filters=32, kernel_size=(8, 8), strides=4,
-                                padding="valid", activation='relu')
+                                padding="valid", activation='relu',
+                                kernel_initializer='he_normal')
         self.conv2     = Conv2D(filters=64, kernel_size=(4, 4), strides=2,
-                                padding="valid", activation='relu')
+                                padding="valid", activation='relu',
+                                kernel_initializer='he_normal')
+        self.norm2     = BatchNormalization()
 #         self.pool1     = MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid")
         self.conv3     = Conv2D(filters=64, kernel_size=(3, 3), strides=1,
-                                padding="valid", activation='relu')
+                                padding="valid", activation='relu',
+                                kernel_initializer='he_normal')
 #         self.pool2     = MaxPooling2D(pool_size=(2, 2), strides=2, padding="valid")
+        self.norm3     = BatchNormalization()
 
         self.deconv1   = Conv2DTranspose(filters=64, kernel_size=(3, 3), strides=1,
-                                padding="valid", activation='relu')
+                                padding="valid", activation='relu',
+                                kernel_initializer='he_normal')
         self.deconv2   = Conv2DTranspose(filters=32, kernel_size=(4, 4), strides=2,
-                                padding="valid", activation='relu')
+                                padding="valid", activation='relu',
+                                kernel_initializer='he_normal')
         self.deconv3   = Conv2DTranspose(filters=1, kernel_size=(8, 8), strides=4,
-                                padding="valid", activation='relu')
+                                padding="valid", activation='relu',
+                                kernel_initializer='he_normal')
         self.softmax   = Softmax(axis=2)
 
     def call(self, obs, training=True):
         obs = obs / 0xFF
         output = self.conv1(obs, training=training)
+        output = self.norm1(output, training=training)
         output = self.conv2(output, training=training)
-#         output = self.pool1(output, training=training)
+#         output = self.norm2(output, training=training)
         output = self.conv3(output, training=training)
-#         output = self.pool2(output, training=training)
+#         output = self.norm3(output, training=training)
 
         output = self.deconv1(output, training=training)
+        output = self.norm2(output, training=training)
         output = self.deconv2(output, training=training)
         output = self.deconv3(output, training=training)
         output = self.softmax(output)
