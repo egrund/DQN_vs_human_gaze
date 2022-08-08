@@ -2,7 +2,7 @@ from my_reader_class import Reader
 import heatmap_comparison as compare 
 import perturbation_for_sarfa as pert
 from sample_trajectory import preprocess_image
-from dqn import DQN
+import dqn
 
 import tensorflow as tf
 import numpy as np
@@ -25,7 +25,7 @@ print("IG gaze to gaze(same index): ", ig) # should be > 0
 ig = compare.saliency_information_gain(gaze_map,heatmap2)
 print("IG gaze to gaze(diff index): ", ig) # should be < 0
 
-model = DQN(9)
+model = dqn.model(9)
 model(tf.random.uniform(shape=(1,84,84,4)),training = False)
 #model.load_weights() # add path
 

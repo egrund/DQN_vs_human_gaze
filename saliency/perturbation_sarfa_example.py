@@ -1,28 +1,27 @@
 import perturbation_for_sarfa as pert
 from my_reader_class import Reader
 from sample_trajectory import preprocess_image
-from dqn import DQN
+import dqn
 
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
 FRAME_SKIPS = 4
-I = 500 # index of frame (1 to data.get_number_frames())
-MODE = 'blurred'
+I = 5 # index of frame (1 to data.get_number_frames())
+MODE = 'blurred' # 'black', 'white', 'random'
 SIGMA = 8 # size of perturbation
 
 data = Reader() #file_dir = , images_dir = ) # add path of txt file and 
-model = DQN(9)
+model = dqn.model(9)
 model(tf.random.uniform(shape=(1,84,84,4)),training = False)
-#model.load_weights() # add path
+#model.load_weights('asterix_test/run2/model') # add path
 
 original_image = tf.convert_to_tensor(data.get_image(I))
 image = preprocess_image(tf.convert_to_tensor(original_image),84,84)
-saliency, perturbed_image = pert.calc_saliency_for_image(image,model,mode=MODE,sigma=SIGMA,frame_skips=FRAME_SKIPS)
+saliency, perturbed_image = pert.calc_sarfa_saliency_for_image(image,model,mode=MODE,sigma=SIGMA,frame_skips=FRAME_SKIPS)
 
 # plots
-
 fig, axs = plt.subplots(nrows=2, ncols=2, squeeze=False, figsize=(8, 8))
 
 axs[0,0].set_title('Original Image')

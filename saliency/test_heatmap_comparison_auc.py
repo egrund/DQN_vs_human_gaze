@@ -2,7 +2,7 @@ from my_reader_class import Reader
 import heatmap_comparison as compare 
 import perturbation_for_sarfa as pert
 from sample_trajectory import preprocess_image
-from dqn import DQN_model
+import dqn
 from sarfa_saliency import computeSaliencyUsingSarfa
 
 import matplotlib.pyplot as plt
@@ -31,7 +31,7 @@ plt.show()
 I = 500
 MODE = 'blurred'
 heatmap = data.create_gaze_heatmap(I)
-model = DQN_model(9)
+model = dqn.model(9)
 model(tf.random.uniform(shape=(1,84,84,4)),training = False)
 #model.load_weights() # add path
 
@@ -43,10 +43,10 @@ auc, map1, map2 = compare.heatmap_comparison_using_AUC(heatmap, saliency)
 
 print("AUC gaze to dqn: ", auc)
 fig, axs = plt.subplots(nrows=1, ncols=2, squeeze=False, figsize=(8, 8),label="maps: gaze to dqn")
-axs[0,0].set_title('Map1')
+axs[0,0].set_title('Map1 (Gaze)')
 axs[0,0].imshow(map1)
 axs[0,0].axis('off')
-axs[0,1].set_title('Map2')
+axs[0,1].set_title('Map2 (Sarfa)')
 axs[0,1].imshow(map2)
 axs[0,1].axis('off') 
 plt.show()
