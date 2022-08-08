@@ -18,13 +18,13 @@ class Buffer:
             self._data = self._data[1:]
 
 
-    def fill(self, num_threads, function, model, epsilon):
+    def fill(self, num_threads, function, model, epsilon,env):
         q = queue.Queue()
         threads = []
         while len(self._data)<self._min_buffer_size:
 
             while len(threads) < num_threads:
-                thread = threading.Thread(target=function, args=(model,False,epsilon,q))
+                thread = threading.Thread(target=function, args=(q,model,False,epsilon,env))
                 thread.start()
                 threads.append(thread)
 
