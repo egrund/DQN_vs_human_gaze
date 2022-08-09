@@ -10,12 +10,12 @@ import matplotlib.pyplot as plt
 FRAME_SKIPS = 4
 MODE = 'Black'
 M_STEPS = 10
-I = 500 # index of frame (1 to data.get_number_frames())
+I = 200 # index of frame (1 to data.get_number_frames())
 
 data = Reader() #file_dir = , images_dir = ) # add path of txt file and 
 model = dqn.model(9)
 model(tf.random.uniform(shape=(1,84,84,4)))
-#model.load_weights('asterix_test/run2/model') # add path
+model.load_weights('asterix_test/run2/model') # add path
 
 image = preprocess_image(tf.convert_to_tensor(data.get_image(I)),84,84)
 observation = tf.repeat(image,FRAME_SKIPS,axis=-1) # model gets several times the same image
@@ -57,7 +57,7 @@ axs[1,0].axis('off')
 
 axs[1,1].set_title('Original + IG Attribution Mask Overlay')
 axs[1,1].imshow(attribution_mask, cmap=plt.cm.inferno)
-axs[1,1].imshow(image, cmap = 'gray', alpha=0.4)
+axs[1,1].imshow(image, cmap = 'gray', alpha=0.2)
 axs[1,1].axis('off')
 
 plt.tight_layout()

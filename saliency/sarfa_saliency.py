@@ -44,15 +44,15 @@ def computeSaliencyUsingSarfa(original_action, dict_q_vals_before_perturbation, 
     answer = 0
 
     # probability of original move in perturbed state
-    # print(dict_q_vals_after_perturbation)
     q_value_action_perturbed_state = dict_q_vals_after_perturbation[original_action]
     q_value_action_original_state = dict_q_vals_before_perturbation[original_action]
 
-    q_values_after_perturbation = np.asarray(list(dict_q_vals_after_perturbation.values()))
-    q_values_before_perturbation = np.asarray(list(dict_q_vals_before_perturbation.values()))
+    q_values_after_perturbation = np.asarray(list(dict_q_vals_after_perturbation.values())) 
+    q_values_before_perturbation = np.asarray(list(dict_q_vals_before_perturbation.values())) 
     
-    probability_action_perturbed_state = np.exp(q_value_action_perturbed_state) / np.sum(np.exp(q_values_after_perturbation))
-    probability_action_original_state = np.exp(q_value_action_original_state) / np.sum(np.exp(q_values_before_perturbation))
+    # I changed the next two lines, because with our q-values they overflow. The result is exactly the same
+    probability_action_perturbed_state = your_softmax(q_values_after_perturbation)[original_action] #np.exp(q_value_action_perturbed_state) / np.sum(np.exp(q_values_after_perturbation))
+    probability_action_original_state = your_softmax(q_values_before_perturbation)[original_action] #np.exp(q_value_action_original_state) / np.sum(np.exp(q_values_before_perturbation))
     
     K = cross_entropy(dict_q_vals_after_perturbation, dict_q_vals_before_perturbation, original_action)
 
@@ -60,7 +60,6 @@ def computeSaliencyUsingSarfa(original_action, dict_q_vals_before_perturbation, 
 
     if probability_action_perturbed_state < probability_action_original_state: # harmonic mean
         answer = 2*dP*K/(dP + K)     
-        
     
     QmaxAnswer = computeSaliencyUsingQMaxChange(original_action, dict_q_vals_before_perturbation, dict_q_vals_after_perturbation)
     action_gap_before_perturbation, action_gap_after_perturbation = computeSaliencyUsingActionGap(dict_q_vals_before_perturbation, dict_q_vals_after_perturbation)

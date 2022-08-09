@@ -8,14 +8,14 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 
 FRAME_SKIPS = 4
-I = 5 # index of frame (1 to data.get_number_frames())
-MODE = 'blurred' # 'black', 'white', 'random'
-SIGMA = 8 # size of perturbation
+I = 250 # index of frame (1 to data.get_number_frames())
+MODE = 'black' #'blurred' # 'black', 'white', 'random'
+SIGMA = 5 # size of perturbation
 
 data = Reader() #file_dir = , images_dir = ) # add path of txt file and 
 model = dqn.model(9)
 model(tf.random.uniform(shape=(1,84,84,4)),training = False)
-#model.load_weights('asterix_test/run2/model') # add path
+model.load_weights('asterix_test/run2/model') # add path
 
 original_image = tf.convert_to_tensor(data.get_image(I))
 image = preprocess_image(tf.convert_to_tensor(original_image),84,84)

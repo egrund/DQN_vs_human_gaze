@@ -3,7 +3,7 @@ import numpy as np
 from scipy import ndimage as ndi 
 import tensorflow as tf
 
-def create_masks(image,sigma=10):
+def create_masks(image,sigma=5):
     """creates an image with a mask around point (x,y) with radius sigma 
     
     Arguments: 
@@ -32,7 +32,7 @@ def perturb_image(image,mask,mode='blurred',perturbation = None):
     """
 
     shape = image.shape
-    if(mode != 'image'):
+    if(mode != 'image'): # blurred default
         perturbation = ndi.gaussian_filter(image, sigma=5) # blurred
     if(mode == 'black'):
         perturbation = tf.zeros(shape=shape)
@@ -64,7 +64,7 @@ def image_to_size(image,y=160,x=210):
     image = tf.image.resize(image,size=(x,y))
     return image
 
-def calc_sarfa_saliency_for_image(image, model, mode = 'blurred',sigma = 8, frame_skips = 4):
+def calc_sarfa_saliency_for_image(image, model, mode = 'blurred',sigma = 5, frame_skips = 4):
     """ calculates the saliency for an whole image 
     
     Arguments: 
@@ -72,7 +72,7 @@ def calc_sarfa_saliency_for_image(image, model, mode = 'blurred',sigma = 8, fram
         model: the NN to predict the values
         mode (String): mode of perturbation see perturb_image
         sigma
-        frame_skip (int): how many frames the model gets at once
+        frame_skips (int): how many frames the model gets at once
     """
 
     observation = tf.repeat(image,frame_skips,axis=-1) # model gets several times the same image
@@ -90,7 +90,7 @@ def calc_sarfa_saliency_for_image(image, model, mode = 'blurred',sigma = 8, fram
         observation = tf.repeat(p_image,frame_skips,axis=-1) # model gets several times the same image
 
         p_q_vals = tf.squeeze(model(tf.expand_dims(observation,axis=0),training = False),axis = 0)
-        sal,_,_,_,_,_ = computeSaliencyUsingSarfa(action,array_to_dict(q_vals.numpy()),array_to_dict(p_q_vals.numpy()))
+        sal,_,_,_,_,_ = computeSaliencyUsingSarfa(action,array_to_dict(q_vals),array_to_dict(p_q_vals))
         saliency[i] = sal
 
     saliency = tf.reshape(saliency,shape=image.shape)
