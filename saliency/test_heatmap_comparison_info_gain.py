@@ -13,7 +13,7 @@ data = Reader()
 # compare human gaze points with sarfa saliency heatmap
 # check perturbation_sarfa_example.py
 
-I = 500
+I = 300
 MODE = 'blurred'
 gaze_map = data.create_gaze_map(I)
 gaze_list = np.array(data.get_gaze(I))
@@ -27,7 +27,7 @@ print("IG gaze to gaze(diff index): ", ig) # should be < 0
 
 model = dqn.model(9)
 model(tf.random.uniform(shape=(1,84,84,4)),training = False)
-#model.load_weights() # add path
+model.load_weights('asterix_test/run2/model') # add path
 
 original_image = data.get_image(I)
 image = preprocess_image(tf.convert_to_tensor(original_image),84,84)

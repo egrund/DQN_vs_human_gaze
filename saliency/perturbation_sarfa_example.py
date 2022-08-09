@@ -8,7 +8,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 
 FRAME_SKIPS = 4
-I = 250 # index of frame (1 to data.get_number_frames())
+I = 120 # index of frame (1 to data.get_number_frames())
 MODE = 'black' #'blurred' # 'black', 'white', 'random'
 SIGMA = 5 # size of perturbation
 
@@ -20,6 +20,7 @@ model.load_weights('asterix_test/run2/model') # add path
 original_image = tf.convert_to_tensor(data.get_image(I))
 image = preprocess_image(tf.convert_to_tensor(original_image),84,84)
 saliency, perturbed_image = pert.calc_sarfa_saliency_for_image(image,model,mode=MODE,sigma=SIGMA,frame_skips=FRAME_SKIPS)
+# saliency, perturbed_image = pert.my_perturbance_map(image,model,mode=MODE,sigma=SIGMA,frame_skips=FRAME_SKIPS)
 
 # plots
 fig, axs = plt.subplots(nrows=2, ncols=2, squeeze=False, figsize=(8, 8))

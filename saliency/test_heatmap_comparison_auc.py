@@ -33,7 +33,7 @@ MODE = 'blurred'
 heatmap = data.create_gaze_heatmap(I)
 model = dqn.model(9)
 model(tf.random.uniform(shape=(1,84,84,4)),training = False)
-#model.load_weights() # add path
+#model.load_weights('asterix_test/run2/model') # add path
 
 image = preprocess_image(tf.convert_to_tensor(data.get_image(I)),84,84)
 saliency, perturbed_image = pert.calc_sarfa_saliency_for_image(image,model,mode=MODE)
