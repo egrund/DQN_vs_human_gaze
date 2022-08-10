@@ -13,7 +13,7 @@ def preprocess_image(image, imgx = 84, imgy = 84):
 
 
 def sample_from_env(env, action, imgx, imgy, stack_frames=4, noops=0):
-    observation, reward, done, _ = env.step(action)
+    observation, reward, done,_trunc, _ = env.step(action)
     observation = preprocess_image(observation,imgx, imgy)
 
     for i in range(stack_frames-1):
@@ -25,7 +25,7 @@ def sample_from_env(env, action, imgx, imgy, stack_frames=4, noops=0):
                 observation = tf.concat([observation,new_observation],axis=-1)
             break
 
-        new_observation, new_reward, done, _  = env.step(noops)
+        new_observation, new_reward, done, _trunc, _  = env.step(noops)
         new_observation = preprocess_image(new_observation,imgx, imgy)
         observation = tf.concat([observation,new_observation],axis=-1)
         reward += new_reward
@@ -57,7 +57,6 @@ def create_trajectory(model, render = False,epsilon = 0.7,env = gym.make("ALE/As
 
         # sample from environment
         new_observation, reward, done = sample_from_env(env, action,imgx , imgy, stack_frames=frame_skips)
-
 
         s_a_r_s.append((tf.convert_to_tensor(observation),tf.convert_to_tensor(action),tf.convert_to_tensor(reward),tf.convert_to_tensor(new_observation), done))
         observation = new_observation

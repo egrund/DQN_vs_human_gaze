@@ -9,11 +9,13 @@ class Buffer:
         self._data = []
         self._max_buffer_size = max_buffer_size
         self._min_buffer_size = min_buffer_size
+        self.last_batch_indexes = list()
 
     def extend(self, list):
+        list_p = []
         for e in list:
-            e.append(np.inf) # give max priority
-        self._data.extend(list) 
+            list_p.append(e + (np.inf,)) # give max priority
+        self._data.extend(list_p) 
         # heapsort 
         self._data.sort(reverse=True,key=self.priority)
         # remove old elements if buffer overflows
@@ -35,9 +37,10 @@ class Buffer:
 
             while not q.empty():
                 elem = q.get(block=False)
+                elem_p = []
                 for e in elem:
-                    e.append(np.inf) # give max priority
-                self._data.extend(elem)
+                    elem_p.append(e + (np.inf,)) # give max priority
+                self._data.extend(elem_p)
                 print("Filling buffer: ", len(self._data), "/", self._min_buffer_size)
 
         # heapsort
@@ -48,14 +51,20 @@ class Buffer:
         """
         return a minibatch sampled from the buffer
         """
+        self.last_batch_indexes = [0]*batch_size
         s_batch = tf.TensorArray(tf.float32,size = batch_size)
         a_batch = tf.TensorArray(tf.float32,size = batch_size)
         r_batch = tf.TensorArray(tf.float32,size = batch_size)
         s_new_batch = tf.TensorArray(tf.float32,size = batch_size)
         done_batch = tf.TensorArray(tf.float32,size = batch_size)
         for i in range(batch_size):
-            element = self._data[i] # take first elements from heap
-            s,a,r,s_new,done,_p = element
+            # element = self._data[i] # take first elements from heap as greedy choice
+            # stochastical rank-based prioritization
+            indexes  = np.arange(0,len(self._data))
+            probs = 1/np.arange(len(self._data),0,-1)
+            index = rand.choices(indexes, weights = probs, k=1 )[0]
+            self.last_batch_indexes[i] = index
+            s,a,r,s_new,done,_p = self._data[index]
 
             # cast all elements to floats
             r = tf.cast(r,tf.float32)
@@ -78,11 +87,17 @@ class Buffer:
         """ returns the priority element for one data sample """
         return elem[-1]
 
-    def update_priority(self,priorities, batch_size):
+    def update_priority(self,priorities):
         """ updates the priorities of the last sampled minibatch """
 
-        for i in range(batch_size):
-            self._data[i][-1] = priorities[i]
+        if len(priorities) != len(self.last_batch_indexes):
+            print("Error, last batch size was not the same as update size is.")
+            return
+
+        for i,s in enumerate(self.last_batch_indexes):
+            sample = list(self._data[s])
+            sample[-1] = priorities[i]
+            self._data[s] = tuple(sample)
 
         # heapsort
         self._data.sort(reverse=True,key=self.priority)
