@@ -66,9 +66,9 @@ class model(tf.keras.Model):
 
 class agent:
 
-    def __init__(self,env = gym.make("ALE/Asterix-v5",full_action_space=False,new_step_api=True),epsilon=1,epsilon_decay=0.09,batch_size = 512,optimizer = tf.keras.optimizers.Adam(0.00025, beta_1=0.9, beta_2=0.999, epsilon=1e-07),inner_its=80,polyak_update = 0.025,buffer_size=40000, buffer_min=38000,threads=10):
-        self.inner_its = inner_its
-        self.threads = threads
+    def __init__(self,env = gym.make("ALE/Asterix-v5",full_action_space=False,new_step_api=True),epsilon=1,epsilon_decay=0.009,batch_size = 512,optimizer = tf.keras.optimizers.Adam(0.00025, beta_1=0.9, beta_2=0.999, epsilon=1e-07),inner_its=80,polyak_update = 0.025,buffer_size=40000, buffer_min=38000,threads=10):
+        self.inner_its = 80
+        self.threads = 10
         self.env = env
         self.batch_size = batch_size
         self.polyak_update = polyak_update
@@ -87,14 +87,14 @@ class agent:
         # initialize buffer
         self.buffer.fill(self.threads,create_trajectory_thread,self.model,1,self.env)
 
-    def train(self,its=20000,path_model_weights = 'asterix_test/run1',path_logs ='logs/asterix_test/run1'):
+    def train(self,its=20000,path ='logs/asterix_test/run1'):
 
         current_epsilon = self.epsilon
 
         # https://www.tensorflow.org/tensorboard/get_started
         current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-        dqn_log_dir = path_logs + current_time + '/dqn'
-        reward_log_dir = path_logs + current_time + '/reward'
+        dqn_log_dir = path + current_time + '/dqn'
+        reward_log_dir = path + current_time + '/reward'
         dqn_summary_writer = tf.summary.create_file_writer(dqn_log_dir)
         reward_summary_writer = tf.summary.create_file_writer(reward_log_dir)
 
@@ -121,19 +121,11 @@ class agent:
 
             for j in range(self.inner_its):
                 s,a,r,s_new,done  = self.buffer.sample_minibatch(self.batch_size)
-
                 loss = self.model.step(s,a,r,s_new,done, self.optimizer, self.model_target)
-                TD_error = list()
-                for i in range(a.shape[0]):
-                    a_new = tf.argmax(tf.squeeze(self.model(tf.expand_dims(s_new[i],axis=0),training = False),axis = 0)).numpy()
-                    old_q_value = tf.squeeze(self.model(tf.expand_dims(s[i],axis=0),training=False), axis = 0)[tf.cast(a[i],dtype=tf.int32)]
-                    new_q_value = tf.squeeze(self.model_target(tf.expand_dims(s[i],axis=0), training = False), axis = 0)[a_new]
-                    TD_error.append( (r[i] + 0.99 * new_q_value - old_q_value).numpy())
-                self.buffer.update_priority(TD_error)
 
                 # log loss in tensorboard
                 with dqn_summary_writer.as_default():
                     tf.summary.scalar("dqn", loss, step=j+i*self.inner_its)
 
-            self.model.save_weights(path_model_weights)
-            self.model_target.save_weights(path_model_weights)
+            self.model.save_weights(path)
+            self.model_target.save_weights(path)
