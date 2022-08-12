@@ -104,7 +104,7 @@ class agent:
             self.model_target.set_weights((1-self.polyak_update)*np.array(self.model_target.get_weights(),dtype = object) + self.polyak_update*np.array(self.model.get_weights(),dtype = object))
 
             # sample new trajectory
-            new_data = create_trajectory(self.model,False,current_epsilon,self.env)
+            new_data, _performance = create_trajectory(self.model,False,current_epsilon,self.env)
             if current_epsilon > 0.1:
                 current_epsilon -= self.epsilon_decay
             reward = []
@@ -137,3 +137,12 @@ class agent:
 
             self.model.save_weights(path_model_weights)
             self.model_target.save_weights(path_model_weights)
+
+
+    def evaluate(self,its=10):
+        performance = 0
+        for _ in range(its):
+            _,p = create_trajectory(self.model)
+            performance += p
+        av_performance = performance / its
+        return av_performance

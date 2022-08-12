@@ -73,6 +73,6 @@ def create_trajectory(model, render = False,epsilon = 0.7,env = gym.make("ALE/As
     return s_a_r_s, performance
 
 def create_trajectory_thread(q,model,render = False,epsilon= 0.7,env = gym.make("ALE/Asterix-v5",full_action_space=False,new_step_api=True),frame_skips = 4,imgx = 84, imgy = 84):
-    s_a_r_s = create_trajectory(model, render, epsilon, env = env, frame_skips = frame_skips, imgx = imgx, imgy = imgy)
+    s_a_r_s , _performance= create_trajectory(model, render, epsilon, env = env, frame_skips = frame_skips, imgx = imgx, imgy = imgy)
     q.put(s_a_r_s)
  
