@@ -40,6 +40,7 @@ def create_trajectory(model, render = False,epsilon = 0.7,env = gym.make("ALE/As
     ACTION_SPACE_SIZE = env.action_space.n # only discrete
 
     s_a_r_s = []
+    performance = 0
 
     observation = env.reset()
     observation = preprocess_image(observation,imgx ,imgy)
@@ -58,6 +59,7 @@ def create_trajectory(model, render = False,epsilon = 0.7,env = gym.make("ALE/As
         # sample from environment
         new_observation, reward, done = sample_from_env(env, action,imgx , imgy, stack_frames=frame_skips)
 
+        performance += reward
         s_a_r_s.append((tf.convert_to_tensor(observation),tf.convert_to_tensor(action),tf.convert_to_tensor(reward),tf.convert_to_tensor(new_observation), done))
         observation = new_observation
 
@@ -66,10 +68,9 @@ def create_trajectory(model, render = False,epsilon = 0.7,env = gym.make("ALE/As
             plt.show()
 
         if done:
-            return s_a_r_s
+            return s_a_r_s, performance
 
-
-    return s_a_r_s
+    return s_a_r_s, performance
 
 def create_trajectory_thread(q,model,render = False,epsilon= 0.7,env = gym.make("ALE/Asterix-v5",full_action_space=False,new_step_api=True),frame_skips = 4,imgx = 84, imgy = 84):
     s_a_r_s = create_trajectory(model, render, epsilon, env = env, frame_skips = frame_skips, imgx = imgx, imgy = imgy)
