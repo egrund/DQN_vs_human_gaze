@@ -67,8 +67,8 @@ class model(tf.keras.Model):
 class agent:
 
     def __init__(self,env = gym.make("ALE/Asterix-v5",full_action_space=False,new_step_api=True),epsilon=1,epsilon_decay=0.09,batch_size = 512,optimizer = tf.keras.optimizers.Adam(0.00025, beta_1=0.9, beta_2=0.999, epsilon=1e-07),inner_its=80,polyak_update = 0.025,buffer_size=40000, buffer_min=38000,threads=10):
-        self.inner_its = 80
-        self.threads = 10
+        self.inner_its = inner_its
+        self.threads = threads
         self.env = env
         self.batch_size = batch_size
         self.polyak_update = polyak_update
