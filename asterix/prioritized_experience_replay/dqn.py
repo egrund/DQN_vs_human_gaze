@@ -66,18 +66,18 @@ class model(tf.keras.Model):
 
 class agent:
 
-    def __init__(self,env = gym.make("ALE/Asterix-v5",full_action_space=False,new_step_api=True),epsilon=1,epsilon_decay=0.09,batch_size = 512,optimizer = tf.keras.optimizers.Adam(0.00025, beta_1=0.9, beta_2=0.999, epsilon=1e-07),inner_its=80,polyak_update = 0.025,buffer_size=40000, buffer_min=38000,threads=10):
+    def __init__(self,env = "ALE/Asterix-v5",epsilon=1,epsilon_decay=0.09,batch_size = 512,optimizer = tf.keras.optimizers.Adam(0.00025, beta_1=0.9, beta_2=0.999, epsilon=1e-07),inner_its=80,polyak_update = 0.025,buffer_size=40000, buffer_min=38000,threads=10):
         self.inner_its = inner_its
         self.threads = threads
-        self.env = env
+        self.env = gym.make(env,full_action_space=False,new_step_api=True)
         self.batch_size = batch_size
         self.polyak_update = polyak_update
         self.epsilon = epsilon
         self.epsilon_decay = epsilon_decay
         self.optimizer = optimizer
         
-        self.model = model(env.action_space.n)
-        self.model_target = model(env.action_space.n)
+        self.model = model(self.env.action_space.n)
+        self.model_target = model(self.env.action_space.n)
         self.buffer = Buffer(buffer_size, buffer_min)
 
         # initialize weights 
@@ -85,7 +85,7 @@ class agent:
         self.model_target(tf.random.uniform(shape=(1,84,84,4)))
         self.model_target.set_weights(np.array(self.model.get_weights(),dtype = object))
         # initialize buffer
-        self.buffer.fill(self.threads,create_trajectory_thread,self.model,1,self.env)
+        self.buffer.fill(self.threads,create_trajectory_thread,self.model,1,env)
 
     def train(self,its=20000,path_model_weights = 'asterix_test/run1',path_logs ='logs/asterix_test/run1'):
 
@@ -105,6 +105,7 @@ class agent:
 
             # sample new trajectory
             new_data, _performance = create_trajectory(self.model,False,current_epsilon,self.env)
+            #print("Performance: ",_performance)
             if current_epsilon > 0.1:
                 current_epsilon -= self.epsilon_decay
             reward = []

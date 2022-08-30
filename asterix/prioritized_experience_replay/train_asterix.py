@@ -1,8 +1,15 @@
 import dqn
 
-DQN_agent = dqn.agent(epsilon_decay= 0.09,inner_its = 80,buffer_size=100000,buffer_min=38000,threads=10)
+BUFFER_SIZE = 100000
+EPSILON_DECAY = 0.09
+BUFFER_MIN = 38000
+THREADS = 10
+INNER_ITS = 80
+TRAIN_ITS = 12000
 
-DQN_agent.train(its=12000, path_model_weights = 'asterix_test/run1', path_logs = 'logs/asterix_test/run1')
+DQN_agent = dqn.agent(epsilon_decay= EPSILON_DECAY,inner_its = INNER_ITS,buffer_size=BUFFER_SIZE,buffer_min=BUFFER_MIN,threads=THREADS)
+
+DQN_agent.train(its=TRAIN_ITS, path_model_weights = 'asterix_test/run1', path_logs = 'logs/asterix_test/run1')
 
 average_performance = DQN_agent.evaluate(100)
 

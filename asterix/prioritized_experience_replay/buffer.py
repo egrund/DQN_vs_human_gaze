@@ -2,6 +2,7 @@ import tensorflow as tf
 import random as rand
 import threading, queue
 import numpy as np
+import gym
 
 class Buffer:
 
@@ -29,7 +30,8 @@ class Buffer:
         while len(self._data)<self._min_buffer_size:
 
             while len(threads) < num_threads:
-                thread = threading.Thread(target=function, args=(q,model,False,epsilon,env))
+                environment = gym.make(env,full_action_space=False,new_step_api=True)
+                thread = threading.Thread(target=function, args=(q,model,False,epsilon,environment))
                 thread.start()
                 threads.append(thread)
 
