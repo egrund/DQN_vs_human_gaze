@@ -124,12 +124,14 @@ class agent:
                 s,a,r,s_new,done  = self.buffer.sample_minibatch(self.batch_size)
 
                 loss = self.model.step(s,a,r,s_new,done, self.optimizer, self.model_target)
-                TD_error = list()
-                for i in range(a.shape[0]):
-                    a_new = tf.argmax(tf.squeeze(self.model(tf.expand_dims(s_new[i],axis=0),training = False),axis = 0)).numpy()
-                    old_q_value = tf.squeeze(self.model(tf.expand_dims(s[i],axis=0),training=False), axis = 0)[tf.cast(a[i],dtype=tf.int32)]
-                    new_q_value = tf.squeeze(self.model_target(tf.expand_dims(s[i],axis=0), training = False), axis = 0)[a_new]
-                    TD_error.append( (r[i] + 0.99 * new_q_value - old_q_value).numpy())
+                
+                a_new = tf.argmax(self.model(s_new,training = False),axis = 1)
+                old_q_value = tf.gather(self.model(s,training=False),tf.cast(a,dtype=tf.int32),batch_dims=1)
+                new_q_value = tf.gather(self.model_target(s,training=False),a_new, batch_dims=1)
+
+                TD_error = r + tf.constant(0.99) * new_q_value - old_q_value
+                TD_error = TD_error.numpy()
+                
                 self.buffer.update_priority(TD_error)
 
                 # log loss in tensorboard
