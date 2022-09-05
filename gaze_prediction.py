@@ -30,9 +30,10 @@ class GazePrediction(Model):
         self.deconv3   = Conv2DTranspose(filters=1, kernel_size=(8, 8), strides=4,
                                 padding='valid', activation='relu',
                                 kernel_initializer='he_normal')
-        self.softmax   = Softmax(axis=2)
+        self.softmax   = Softmax()
 
     def call(self, obs, training=True):
+        input_shape = tf.shape(obs)
         obs = tf.transpose(obs, [0, 2, 3, 1]) # make channels last: NCHW doesn't work on M1 chip
         obs = obs / 0xFF
         output = self.conv1(obs, training=training)
@@ -44,12 +45,13 @@ class GazePrediction(Model):
         output = self.norm2(output, training=training)
         output = self.deconv2(output, training=training)
         output = self.deconv3(output, training=training)
-        output = self.softmax(output)
-        return output
+        output = self.softmax(tf.reshape(output, [-1]))
+        return tf.reshape(output, (input_shape[0], input_shape[2], input_shape[3]))
 
 
 if __name__ == '__main__':
 
+    import tensorflow as tf
     import gym
     from gym.wrappers import FrameStack, AtariPreprocessing
 
@@ -62,6 +64,6 @@ if __name__ == '__main__':
     model.summary()
     obs = tf.cast(env.reset(), tf.float32)
     obs = tf.expand_dims(obs, axis=0) # add batch dim
-    print(model.predict(obs).shape)
+    print(model(obs).shape)
 
     # model.save_weights("gaze_prediction", save_format="tf")
