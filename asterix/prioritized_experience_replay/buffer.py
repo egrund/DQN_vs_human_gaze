@@ -1,33 +1,111 @@
+from re import A
+from turtle import shape
 import tensorflow as tf
 import random as rand
 import threading, queue
 import numpy as np
 import gym
+import joblib
+
+
 
 class Buffer:
 
     def __init__(self, max_buffer_size, min_buffer_size) -> None:
-        self._data = []
+
+        self._data_s = []
+        self._data_a = []
+        self._data_r = []
+        self._data_s_new = []
+        self._data_done = []
+        self._data_priority = []
+
         self._max_buffer_size = max_buffer_size
         self._min_buffer_size = min_buffer_size
         self.last_batch_indexes = list()
 
-    def extend(self, list):
-        list_p = []
-        for e in list:
-            list_p.append(e + (np.inf,)) # give max priority
-        self._data.extend(list_p) 
-        # heapsort 
-        self._data.sort(reverse=True,key=self.priority)
+    def sort(self):
+
+        # http://stackoverflow.com/questions/3071415/efficient-method-to-calculate-the-rank-vector-of-a-list-in-python
+        argsort = sorted(range(len(self._data_priority)), key=self._data_priority.__getitem__)
+        argsort.reverse()
+
+        self._data_s = [self._data_s[i] for i in argsort]
+        self._data_a = [self._data_a[i] for i in argsort]
+        self._data_r = [self._data_r[i] for i in argsort]
+        self._data_s_new = [self._data_s_new[i] for i in argsort]
+        self._data_done = [self._data_done[i] for i in argsort]
+        self._data_priority = [self._data_priority[i] for i in argsort]
+    
+    def reset(self):
+        self._data_s = []
+        self._data_a = []
+        self._data_r = []
+        self._data_s_new = []
+        self._data_done = []
+        self._data_priority = []
+
+    def load(self, path : str):
+
+        try:
+            with open( path + "bufferv3_s.pkl", "rb" ) as f:
+                self._data_s = joblib.load(f)
+            with open( path + "bufferv3_a.pkl", "rb" ) as f:
+                self._data_a = joblib.load(f)
+            with open( path + "bufferv3_r.pkl", "rb" ) as f:
+                self._data_r = joblib.load(f)
+            with open( path + "bufferv3_s_new.pkl", "rb" ) as f:
+                self._data_s_new = joblib.load(f)
+            with open( path + "bufferv3_done.pkl", "rb" ) as f:
+                self._data_done = joblib.load(f)
+            with open( path + "bufferv3_priority.pkl", "rb" ) as f:
+                self._data_priority = joblib.load(f)
+        except:
+            print("Buffer could not be loaded")
+            self.reset()
+    
+    def save(self, path : str):
+        try:
+            with open( path + "bufferv4_s.pkl", "wb" ) as f:
+                joblib.dump(self._data_s, f)
+            with open( path + "bufferv4_a.pkl", "wb" ) as f:
+                joblib.dump(self._data_a, f)
+            with open( path + "bufferv4_r.pkl", "wb" ) as f:
+                joblib.dump(self._data_r, f)
+            with open( path + "bufferv4_s_new.pkl", "wb" ) as f:
+                joblib.dump(self._data_s_new, f)
+            with open( path + "bufferv4_done.pkl", "wb" ) as f:
+                joblib.dump(self._data_done, f)
+            with open( "bufferv4_priority.pkl", "wb" ) as f:
+                joblib.dump(self._data_priority, f)
+        except:
+            print("Buffer could not be saved")
+
+    def extend(self, data):
+
+        for s,a,r,s_new,done in data:
+
+            self._data_s.insert(0,s)
+            self._data_a.insert(0,a)
+            self._data_r.insert(0,r)
+            self._data_s_new.insert(0,s_new)
+            self._data_done.insert(0,done)
+            self._data_priority.insert(0,np.inf)
+
+        
         # remove old elements if buffer overflows
-        while len(self._data)>self._max_buffer_size:
-            self._data = self._data[1:]
+        self._data_s = self._data_s[:self._max_buffer_size]
+        self._data_a = self._data_a[:self._max_buffer_size]
+        self._data_r = self._data_r[:self._max_buffer_size]
+        self._data_s_new = self._data_s_new[:self._max_buffer_size]
+        self._data_done = self._data_done[:self._max_buffer_size]
+        self._data_priority = self._data_priority[:self._max_buffer_size]
 
 
     def fill(self, num_threads, function, model, epsilon,env):
         q = queue.Queue()
         threads = []
-        while len(self._data)<self._min_buffer_size:
+        while len(self._data_s)<self._min_buffer_size:
 
             while len(threads) < num_threads:
                 environment = gym.make(env,full_action_space=False,new_step_api=True)
@@ -38,56 +116,29 @@ class Buffer:
             threads = [t for t in threads if thread.is_alive()]
 
             while not q.empty():
-                elem = q.get(block=False)
-                elem_p = []
-                for e in elem:
-                    elem_p.append(e + (np.inf,)) # give max priority
-                self._data.extend(elem_p)
-                print("Filling buffer: ", len(self._data), "/", self._min_buffer_size)
 
-        # heapsort
-        self._data.sort(reverse=True,key=self.priority)
+                data = q.get(block=False)
+                self.extend(data)
+                print("Filling buffer: ", len(self._data_s), "/", self._min_buffer_size)
+        
 
-
-    def sample_minibatch(self, batch_size):
+    def sample_minibatch(self, batch_size, use_prioritized_replay):
         """
         return a minibatch sampled from the buffer
         """
-        self.last_batch_indexes = [0]*batch_size
-        s_batch = tf.TensorArray(tf.float32,size = batch_size)
-        a_batch = tf.TensorArray(tf.float32,size = batch_size)
-        r_batch = tf.TensorArray(tf.float32,size = batch_size)
-        s_new_batch = tf.TensorArray(tf.float32,size = batch_size)
-        done_batch = tf.TensorArray(tf.float32,size = batch_size)
-        for i in range(batch_size):
-            # element = self._data[i] # take first elements from heap as greedy choice
-            # stochastical rank-based prioritization
-            indexes  = np.arange(0,len(self._data))
-            probs = 1/np.arange(len(self._data),0,-1)
-            index = rand.choices(indexes, weights = probs, k=1 )[0]
-            self.last_batch_indexes[i] = index
-            s,a,r,s_new,done,_p = self._data[index]
+        if use_prioritized_replay:
+            indices = rand.choices(range(len(self._data_s)),weights = self._data_priority, k = batch_size)
+        else: 
+            indices = rand.choices(range(len(self._data_s)),k = batch_size)
 
-            # cast all elements to floats
-            r = tf.cast(r,tf.float32)
-            s = tf.cast(s,tf.float32)
-            a = tf.cast(a,tf.float32)
-            s_new = tf.cast(s_new,tf.float32)
-            done = tf.cast(tf.cast(done,tf.int32),tf.float32)
+        s = np.stack([self._data_s[i] for i in indices],axis = 0)
+        a = np.stack([self._data_a[i] for i in indices],axis = 0)
+        r = np.stack([self._data_r[i] for i in indices],axis = 0)
+        s_new = np.stack([self._data_s_new[i] for i in indices],axis = 0)
+        done = np.stack([self._data_done[i] for i in indices],axis = 0)
 
-            # add them to the tensor array
-            s_batch = s_batch.write(i,s)
-            a_batch = a_batch.write(i,a)
-            r_batch = r_batch.write(i,r)    
-            s_new_batch = s_new_batch.write(i,s_new)
-            done_batch = done_batch.write(i,done)
-        
-        # stack for batch dimension
-        return s_batch.stack(),a_batch.stack(),r_batch.stack(),s_new_batch.stack(),done_batch.stack()
 
-    def priority(self,elem):
-        """ returns the priority element for one data sample """
-        return elem[-1]
+        return s,a,r,s_new,done
 
     def update_priority(self,priorities):
         """ updates the priorities of the last sampled minibatch """
@@ -97,9 +148,7 @@ class Buffer:
             return
 
         for i,s in enumerate(self.last_batch_indexes):
-            sample = list(self._data[s])
-            sample[-1] = priorities[i]
-            self._data[s] = tuple(sample)
+            self._data_priority[s] = priorities[i]
 
         # heapsort
-        self._data.sort(reverse=True,key=self.priority)
+        self.sort()
