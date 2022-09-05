@@ -1,9 +1,14 @@
+import imp
 import tensorflow as tf
 import numpy as np
 import datetime
 import gym
 from buffer import Buffer
+import pickle
 from sample_trajectory import create_trajectory_thread,create_trajectory
+import tqdm
+from numba import cuda
+import joblib
 
 class model(tf.keras.Model):
     def __init__(self, num_actions = 9.0, input_shape = (84,84,4)):
@@ -11,15 +16,13 @@ class model(tf.keras.Model):
 
         self._mse = tf.keras.losses.MeanSquaredError()
 
-        self._l1 = tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=input_shape)
-        self._l2 = tf.keras.layers.MaxPooling2D((2, 2))
-        self._l3 = tf.keras.layers.Conv2D(32, (3, 3), activation='relu')
-        self._l4 = tf.keras.layers.MaxPooling2D((2, 2))
-        self._l5 = tf.keras.layers.Conv2D(64, (3, 3), activation='relu')
+        self._l1 = tf.keras.layers.Conv2D(64, (8, 8), strides = (2,2), activation='relu', input_shape=input_shape)#, kernel_regularizer = tf.keras.regularizers.L1L2(l1=0.1, l2=0.1))
+        self._l2 = tf.keras.layers.MaxPooling2D((3, 3))
+        self._l3 = tf.keras.layers.Conv2D(64, (4, 4), activation='relu')#, kernel_regularizer = tf.keras.regularizers.L1L2(l1=0.1, l2=0.1))
+        self._l4 = tf.keras.layers.MaxPooling2D((3, 3))
+        self._l5 = tf.keras.layers.Conv2D(64, (3, 3), activation='relu')#, kernel_regularizer = tf.keras.regularizers.L1L2(l1=0.1, l2=0.1))
         self._l6 = tf.keras.layers.GlobalMaxPooling2D()
-        self._l7 = tf.keras.layers.Dense(64,activation="relu")
-        self._l8 = tf.keras.layers.Dense(32,activation="relu")
-        self._l9 = tf.keras.layers.Dense(16,activation="relu")
+        self._l7 = tf.keras.layers.Dense(512,activation="relu")#, kernel_regularizer = tf.keras.regularizers.L1L2(l1=0.1, l2=0.1))
 
         # state value
         self._l10 = tf.keras.layers.Dense(1,activation="linear")
@@ -37,8 +40,8 @@ class model(tf.keras.Model):
         x = self._l5(x,training=training)
         x = self._l6(x,training=training)
         x = self._l7(x,training=training)
-        x = self._l8(x,training=training)
-        x = self._l9(x,training=training)
+        #x = self._l8(x,training=training)
+        #x = self._l9(x,training=training)
 
         state_value = self._l10(x,training=training)
         advantages = self._l11(x,training=training)
@@ -64,30 +67,34 @@ class model(tf.keras.Model):
 
         return loss
 
+
+
 class agent:
 
-    def __init__(self,env = "ALE/Asterix-v5",epsilon=1,epsilon_decay=0.09,batch_size = 512,optimizer = tf.keras.optimizers.Adam(0.00025, beta_1=0.9, beta_2=0.999, epsilon=1e-07),inner_its=80,polyak_update = 0.025,buffer_size=40000, buffer_min=38000,threads=10):
+    def __init__(self,buffer : Buffer, use_prioritized_replay : bool , env : str,epsilon : int,epsilon_decay : float, epsilon_min : float, batch_size : int,optimizer : tf.keras.optimizers,inner_its : int, samples_from_env : int,polyak_update : float):
+
         self.inner_its = inner_its
-        self.threads = threads
         self.env = gym.make(env,full_action_space=False,new_step_api=True)
         self.batch_size = batch_size
         self.polyak_update = polyak_update
         self.epsilon = epsilon
         self.epsilon_decay = epsilon_decay
         self.optimizer = optimizer
+        self.buffer = buffer
+        self.samples_from_env = samples_from_env
+        self.epsilon_min = epsilon_min
+        self.use_prioritized_replay = use_prioritized_replay
+
         
         self.model = model(self.env.action_space.n)
         self.model_target = model(self.env.action_space.n)
-        self.buffer = Buffer(buffer_size, buffer_min)
 
         # initialize weights 
         self.model(tf.random.uniform(shape=(1,84,84,4)))
         self.model_target(tf.random.uniform(shape=(1,84,84,4)))
         self.model_target.set_weights(np.array(self.model.get_weights(),dtype = object))
-        # initialize buffer
-        self.buffer.fill(self.threads,create_trajectory_thread,self.model,1,env)
 
-    def train(self,its=20000,path_model_weights = 'asterix_test/run1',path_logs ='logs/asterix_test/run1'):
+    def train(self,its : int,path_model_weights : str,path_logs : str):
 
         current_epsilon = self.epsilon
 
@@ -100,46 +107,63 @@ class agent:
 
         for i in range(its):
 
-            # apply polyak averaging
-            self.model_target.set_weights((1-self.polyak_update)*np.array(self.model_target.get_weights(),dtype = object) + self.polyak_update*np.array(self.model.get_weights(),dtype = object))
-
-            # sample new trajectory
-            new_data, _performance = create_trajectory(self.model,False,current_epsilon,self.env)
-            #print("Performance: ",_performance)
-            if current_epsilon > 0.1:
+            # update epsilon
+            if self.epsilon_min > 0.1:
                 current_epsilon -= self.epsilon_decay
-            reward = []
-            for s,a,r,new_s,done in new_data:
-                reward.append(tf.cast(r,tf.float32))
-            #print("round: ", i," average reward: ",tf.reduce_mean(reward))
 
-            # log average reward in tensorboard
-            with reward_summary_writer.as_default():
-                tf.summary.scalar("reward", tf.reduce_mean(reward), step = i*self.inner_its)
+            
+            for m in range(self.samples_from_env):
+                # sample new trajectory
+                new_data, _performance = create_trajectory(self.model,False,current_epsilon,self.env)
 
-            # add new data to replay buffer
-            self.buffer.extend(new_data)
+                reward = []
+                for s,a,r,new_s,done in new_data:
+                    reward.append(tf.cast(r,tf.float32))
+                print("round: ", i," average reward: ",tf.reduce_mean(reward))
 
+                # log average reward in tensorboard
+                with reward_summary_writer.as_default():
+                    tf.summary.scalar("reward", tf.reduce_mean(reward), step = m+i*self.inner_its)
+
+                # add new data to replay buffer
+                self.buffer.extend(new_data)
+
+        
             for j in range(self.inner_its):
-                s,a,r,s_new,done  = self.buffer.sample_minibatch(self.batch_size)
 
-                loss = self.model.step(s,a,r,s_new,done, self.optimizer, self.model_target)
-                
-                a_new = tf.argmax(self.model(s_new,training = False),axis = 1)
-                old_q_value = tf.gather(self.model(s,training=False),tf.cast(a,dtype=tf.int32),batch_dims=1)
-                new_q_value = tf.gather(self.model_target(s,training=False),a_new, batch_dims=1)
+                s,a,r,s_new,done  = self.buffer.sample_minibatch(self.batch_size, self.use_prioritized_replay)
+                s = tf.cast(s,tf.float32)
+                a = tf.cast(a,tf.float32)
+                r = tf.cast(r,tf.float32)
+                s_new = tf.cast(s_new,tf.float32)
+                done = tf.cast(done,tf.float32)
 
-                TD_error = r + tf.constant(0.99) * new_q_value - old_q_value
-                TD_error = TD_error.numpy()
-                
-                self.buffer.update_priority(TD_error)
+                with tf.device("/GPU:0"):
+                    loss = self.model.step(s,a,r,s_new,done, self.optimizer, self.model_target)
+
+                    if self.use_prioritized_replay:
+                        a_new = tf.argmax(self.model(s_new,training = False),axis = 1)
+                        old_q_value = tf.gather(self.model(s,training=False),tf.cast(a,dtype=tf.int32),batch_dims=1)
+                        new_q_value = tf.gather(self.model_target(s,training=False),a_new, batch_dims=1)
+
+                        TD_error = r + tf.constant(0.99) * new_q_value - old_q_value
+                        TD_error = TD_error.numpy()
+
+                if self.use_prioritized_replay:
+                    self.buffer.update_priority(TD_error)
+
+                # apply polyak averaging
+                self.model_target.set_weights((1-self.polyak_update)*np.array(self.model_target.get_weights(),dtype = object) + self.polyak_update*np.array(self.model.get_weights(),dtype = object))
 
                 # log loss in tensorboard
                 with dqn_summary_writer.as_default():
                     tf.summary.scalar("dqn", loss, step=j+i*self.inner_its)
 
+
             self.model.save_weights(path_model_weights)
             self.model_target.save_weights(path_model_weights)
+
+
 
 
     def evaluate(self,its=10):
