@@ -108,7 +108,7 @@ class agent:
         for i in range(its):
 
             # update epsilon
-            if self.epsilon_min > 0.1:
+            if current_epsilon > self.epsilon_min:
                 current_epsilon -= self.epsilon_decay
 
             
@@ -149,6 +149,7 @@ class agent:
                         TD_error = r + tf.constant(0.99) * new_q_value - old_q_value
                         TD_error = TD_error.numpy()
 
+                        
                 if self.use_prioritized_replay:
                     self.buffer.update_priority(TD_error)
 
