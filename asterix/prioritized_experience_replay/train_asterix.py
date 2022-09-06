@@ -41,7 +41,8 @@ if __name__ == '__main__':
     inner_its = INNER_ITS,
     samples_from_env = SAMPLES_FROM_ENV,
     polyak_update = POLYAK_UPDATE,
-    optimizer = OPTIMIZER)
+    optimizer = OPTIMIZER,
+    preload_weights_path = None)
 
     DQN_agent.train(its = TRAIN_ITS, path_model_weights = LOG_PATH_WEIGHTS, path_logs = LOG_PATH_TENSORBOARD)
 
