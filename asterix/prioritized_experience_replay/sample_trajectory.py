@@ -88,6 +88,3 @@ def create_trajectory(model, batch : int, epsilon : float,env_name : str ,frame_
 
     return s_a_r_s
 
-
-
-
