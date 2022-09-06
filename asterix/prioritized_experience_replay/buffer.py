@@ -1,11 +1,7 @@
-from re import A
-from turtle import shape
-import tensorflow as tf
 import random as rand
-import threading, queue
 import numpy as np
-import gym
 import joblib
+from sample_trajectory import create_trajectory
 
 
 
@@ -102,24 +98,13 @@ class Buffer:
         self._data_priority = self._data_priority[:self._max_buffer_size]
 
 
-    def fill(self, num_threads, function, model, epsilon,env):
-        q = queue.Queue()
-        threads = []
+    def fill(self, model, epsilon,env):
+
+       
         while len(self._data_s)<self._min_buffer_size:
-
-            while len(threads) < num_threads:
-                environment = gym.make(env,full_action_space=False,new_step_api=True)
-                thread = threading.Thread(target=function, args=(q,model,False,epsilon,environment))
-                thread.start()
-                threads.append(thread)
-
-            threads = [t for t in threads if thread.is_alive()]
-
-            while not q.empty():
-
-                data = q.get(block=False)
-                self.extend(data)
-                print("Filling buffer: ", len(self._data_s), "/", self._min_buffer_size)
+            data = create_trajectory(model,100,epsilon,env,4,84,84)
+            self.extend(data)
+            print("Filling buffer: ", len(self._data_s), "/", self._min_buffer_size)
         
 
     def sample_minibatch(self, batch_size, use_prioritized_replay):
