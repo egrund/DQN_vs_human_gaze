@@ -1,14 +1,10 @@
-import imp
 import tensorflow as tf
 import numpy as np
 import datetime
 import gym
 from buffer import Buffer
-import pickle
-from sample_trajectory import create_trajectory_thread,create_trajectory
-import tqdm
-from numba import cuda
-import joblib
+from sample_trajectory import create_trajectory
+import time
 
 class model(tf.keras.Model):
     def __init__(self, num_actions = 9.0, input_shape = (84,84,4)):
@@ -40,8 +36,6 @@ class model(tf.keras.Model):
         x = self._l5(x,training=training)
         x = self._l6(x,training=training)
         x = self._l7(x,training=training)
-        #x = self._l8(x,training=training)
-        #x = self._l9(x,training=training)
 
         state_value = self._l10(x,training=training)
         advantages = self._l11(x,training=training)
@@ -74,7 +68,7 @@ class agent:
     def __init__(self,buffer : Buffer, use_prioritized_replay : bool , env : str,epsilon : int,epsilon_decay : float, epsilon_min : float, batch_size : int,optimizer : tf.keras.optimizers,inner_its : int, samples_from_env : int,polyak_update : float):
 
         self.inner_its = inner_its
-        self.env = gym.make(env,full_action_space=False,new_step_api=True)
+        self.env = env
         self.batch_size = batch_size
         self.polyak_update = polyak_update
         self.epsilon = epsilon
@@ -86,8 +80,8 @@ class agent:
         self.use_prioritized_replay = use_prioritized_replay
 
         
-        self.model = model(self.env.action_space.n)
-        self.model_target = model(self.env.action_space.n)
+        self.model = model(gym.make(self.env,full_action_space=False,new_step_api=True).action_space.n)
+        self.model_target = model(gym.make(self.env,full_action_space=False,new_step_api=True).action_space.n)
 
         # initialize weights 
         self.model(tf.random.uniform(shape=(1,84,84,4)))
@@ -102,8 +96,14 @@ class agent:
         current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
         dqn_log_dir = path_logs + current_time + '/dqn'
         reward_log_dir = path_logs + current_time + '/reward'
+        time_environment_sample_log_dir = path_logs + current_time + '/time_environment'
+        time_step_log_dir = path_logs + current_time + '/time_step'
+
         dqn_summary_writer = tf.summary.create_file_writer(dqn_log_dir)
         reward_summary_writer = tf.summary.create_file_writer(reward_log_dir)
+        time_environment_sample_summary_writer = tf.summary.create_file_writer(time_environment_sample_log_dir)
+        time_step_summary_writer = tf.summary.create_file_writer(time_step_log_dir)
+
 
         for i in range(its):
 
@@ -111,24 +111,38 @@ class agent:
             if current_epsilon > self.epsilon_min:
                 current_epsilon -= self.epsilon_decay
 
-            
-            for m in range(self.samples_from_env):
+            samples_added = 0
+            average_reward = []
+
+            start_time_sample = time.time()
+
+            while samples_added < self.samples_from_env:
+
                 # sample new trajectory
-                new_data, _performance = create_trajectory(self.model,False,current_epsilon,self.env)
+                new_data = create_trajectory(self.model,32,current_epsilon,self.env,4,84,84)
+                samples_added += len(new_data)
 
                 reward = []
-                for s,a,r,new_s,done in new_data:
+                for _,_,r,_,_ in new_data:
                     reward.append(tf.cast(r,tf.float32))
                 print("round: ", i," average reward: ",tf.reduce_mean(reward))
-
-                # log average reward in tensorboard
-                with reward_summary_writer.as_default():
-                    tf.summary.scalar("reward", tf.reduce_mean(reward), step = m+i*self.inner_its)
+                average_reward.append(tf.reduce_mean(reward))
 
                 # add new data to replay buffer
                 self.buffer.extend(new_data)
 
-        
+            end_time_sample = time.time()
+            
+            # log average reward of average reward in tensorboard
+            with reward_summary_writer.as_default():
+                tf.summary.scalar("reward", tf.reduce_mean(average_reward), step = i*self.inner_its)
+            
+            with time_environment_sample_summary_writer.as_default():
+                tf.summary.scalar("time_environment", end_time_sample - start_time_sample, step = i*self.inner_its)
+
+            
+            start_time_step = time.time()
+
             for j in range(self.inner_its):
 
                 s,a,r,s_new,done  = self.buffer.sample_minibatch(self.batch_size, self.use_prioritized_replay)
@@ -160,6 +174,9 @@ class agent:
                 with dqn_summary_writer.as_default():
                     tf.summary.scalar("dqn", loss, step=j+i*self.inner_its)
 
+            end_time_step = time.time()
+            with time_step_summary_writer.as_default():
+                tf.summary.scalar("time_step", end_time_step - start_time_step, step = i*self.inner_its)
 
             self.model.save_weights(path_model_weights)
             self.model_target.save_weights(path_model_weights)
