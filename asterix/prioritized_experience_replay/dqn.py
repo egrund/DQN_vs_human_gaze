@@ -65,7 +65,7 @@ class model(tf.keras.Model):
 
 class agent:
 
-    def __init__(self,buffer : Buffer, use_prioritized_replay : bool , env : str,epsilon : int,epsilon_decay : float, epsilon_min : float, batch_size : int,optimizer : tf.keras.optimizers,inner_its : int, samples_from_env : int,polyak_update : float):
+    def __init__(self,buffer : Buffer, use_prioritized_replay : bool , env : str,epsilon : int,epsilon_decay : float, epsilon_min : float, batch_size : int,optimizer : tf.keras.optimizers,inner_its : int, samples_from_env : int,polyak_update : float, preload_weights_path : str):
 
         self.inner_its = inner_its
         self.env = env
@@ -86,7 +86,12 @@ class agent:
         # initialize weights 
         self.model(tf.random.uniform(shape=(1,84,84,4)))
         self.model_target(tf.random.uniform(shape=(1,84,84,4)))
-        self.model_target.set_weights(np.array(self.model.get_weights(),dtype = object))
+
+        if preload_weights_path:
+            self.model.load_weights(preload_weights_path + "model")
+            self.model.load_weights(preload_weights_path + "model_target")
+        else:
+            self.model_target.set_weights(np.array(self.model.get_weights(),dtype = object))
 
     def train(self,its : int,path_model_weights : str,path_logs : str):
 
@@ -98,12 +103,16 @@ class agent:
         reward_log_dir = path_logs + current_time + '/reward'
         time_environment_sample_log_dir = path_logs + current_time + '/time_environment'
         time_step_log_dir = path_logs + current_time + '/time_step'
+        sample_correction_log_dir = path_logs + current_time + '/sample_correction'
 
         dqn_summary_writer = tf.summary.create_file_writer(dqn_log_dir)
         reward_summary_writer = tf.summary.create_file_writer(reward_log_dir)
         time_environment_sample_summary_writer = tf.summary.create_file_writer(time_environment_sample_log_dir)
         time_step_summary_writer = tf.summary.create_file_writer(time_step_log_dir)
+        sample_correction_summary_writer = tf.summary.create_file_writer(sample_correction_log_dir)
 
+        # if agent plays game longer reduce batch size and if it plays worse increase batch size
+        sample_correction = 1.0
 
         for i in range(its):
 
@@ -111,28 +120,30 @@ class agent:
             if current_epsilon > self.epsilon_min:
                 current_epsilon -= self.epsilon_decay
 
-            samples_added = 0
             average_reward = []
 
             start_time_sample = time.time()
 
-            while samples_added < self.samples_from_env:
+            # sample new trajectory
+            new_data = create_trajectory(self.model,int(32*sample_correction)+1,current_epsilon,self.env,4,84,84)
 
-                # sample new trajectory
-                new_data = create_trajectory(self.model,32,current_epsilon,self.env,4,84,84)
-                samples_added += len(new_data)
+            reward = []
+            for _,_,r,_,_ in new_data:
+                reward.append(tf.cast(r,tf.float32))
+            print("round: ", i," average reward: ",tf.reduce_mean(reward))
+            average_reward.append(tf.reduce_mean(reward))
 
-                reward = []
-                for _,_,r,_,_ in new_data:
-                    reward.append(tf.cast(r,tf.float32))
-                print("round: ", i," average reward: ",tf.reduce_mean(reward))
-                average_reward.append(tf.reduce_mean(reward))
+            # add new data to replay buffer
+            self.buffer.extend(new_data)
 
-                # add new data to replay buffer
-                self.buffer.extend(new_data)
+            sample_correction = max([((self.samples_from_env*(int(32*sample_correction)+1)/len(new_data))-1)/(int(32*sample_correction)),0.0])
 
             end_time_sample = time.time()
             
+            
+            with sample_correction_summary_writer.as_default():
+                tf.summary.scalar("sample_correction", sample_correction, step = i*self.inner_its)
+
             # log average reward of average reward in tensorboard
             with reward_summary_writer.as_default():
                 tf.summary.scalar("reward", tf.reduce_mean(average_reward), step = i*self.inner_its)
@@ -178,8 +189,8 @@ class agent:
             with time_step_summary_writer.as_default():
                 tf.summary.scalar("time_step", end_time_step - start_time_step, step = i*self.inner_its)
 
-            self.model.save_weights(path_model_weights)
-            self.model_target.save_weights(path_model_weights)
+            self.model.save_weights(path_model_weights + "model")
+            self.model_target.save_weights(path_model_weights + "model_target")
 
 
 
