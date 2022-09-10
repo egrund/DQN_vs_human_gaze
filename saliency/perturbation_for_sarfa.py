@@ -64,7 +64,7 @@ def image_to_size(image,y=160,x=210):
     image = tf.image.resize(image,size=(x,y))
     return image
 
-def calc_sarfa_saliency_for_image(image, model, mode = 'blurred', masks = None, frame_skips = 4):
+def calc_sarfa_saliency_for_image(image, model, mode = 'blurred', masks = None, perturbation = None, frame_skips = 4):
     """ calculates the saliency for an whole image 
     
     Arguments: 
@@ -83,7 +83,7 @@ def calc_sarfa_saliency_for_image(image, model, mode = 'blurred', masks = None, 
     saliency = np.zeros(shape=(image.shape[0],image.shape[1],1)) # in case image is colourful
 
     for mask,x,y in masks:
-        p_image = tf.convert_to_tensor(perturb_image(image.numpy(),mask, mode=mode))
+        p_image = tf.convert_to_tensor(perturb_image(image.numpy(),mask, mode,perturbation))
         observation = tf.repeat(p_image,frame_skips,axis=-1) # model gets several times the same image
 
         p_q_vals = tf.squeeze(model(tf.expand_dims(observation,axis=0),training = False),axis = 0)
@@ -92,7 +92,7 @@ def calc_sarfa_saliency_for_image(image, model, mode = 'blurred', masks = None, 
 
     return saliency
 
-def my_perturbance_map(image,model,mode='blurred',masks = None, frame_skips=4):
+def my_perturbance_map(image,model,mode='blurred',masks = None, perturbation = None, frame_skips=4):
     """creates a binary map with pixels being blurred around changing the action having a value of 1, pixels not changing the action having a value of zero """
 
     observation = tf.repeat(image,frame_skips,axis=-1) # model gets several times the same image
@@ -103,7 +103,7 @@ def my_perturbance_map(image,model,mode='blurred',masks = None, frame_skips=4):
     saliency = np.zeros(shape=(image.shape[0],image.shape[1],1)) # in case image is colourful
 
     for mask,x,y in masks:
-        p_image = tf.convert_to_tensor(perturb_image(image.numpy(),mask, mode=mode))
+        p_image = tf.convert_to_tensor(perturb_image(image.numpy(),mask, mode,perturbation))
 
         observation = tf.repeat(p_image,frame_skips,axis=-1) # model gets several times the same image
         p_q_vals = tf.squeeze(model(tf.expand_dims(observation,axis=0),training = False),axis = 0)

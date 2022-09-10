@@ -70,7 +70,8 @@ def compare_by_mean(gaze_list : list ,saliency_map):
     saliency_mean = np.mean(saliency_list)
 
     # check if the middle would have been a better guess
-    dist_middle = np.linalg.norm(gaze_mean - np.array([int(saliency_map.shape[0]/2),int(saliency_map.shape[1]/2)]))
-    dist_sal = np.linalg.norm(gaze_mean - saliency_mean)
+    numerator = np.mean(saliency_map.shape)
+    dist_middle = np.linalg.norm(gaze_mean - np.array([int(saliency_map.shape[0]/2),int(saliency_map.shape[1]/2)])) / numerator
+    dist_sal = np.linalg.norm(gaze_mean - saliency_mean) / numerator
 
     return dist_sal, dist_middle
