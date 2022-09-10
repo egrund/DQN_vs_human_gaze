@@ -13,7 +13,7 @@ def create_socket(port):
 
     return soc
 
-def start_server_sender(port, buffer, batch_size, can_sample):
+def start_server_sender(port, buffer, batch_size, indices,can_sample):
 
     soc = create_socket(port)
     while True:
@@ -21,9 +21,22 @@ def start_server_sender(port, buffer, batch_size, can_sample):
         with con:
             while not can_sample["0"]:
                 pass
-            data = pickle.dumps(buffer.sample_minibatch(batch_size))
+            while indices["0"] == None:
+                pass
+            data = pickle.dumps(buffer.sample_minibatch(indices["0"][batch_size*(port-8000):batch_size*(port-8000+1)]))
             con.sendall(data)
     
+def start_server_indice_selector(port,buffer, indices, batch_size, inner_its, can_sample):
+    soc = create_socket(port)
+    while True:
+        con,_ = soc.accept()
+        while not can_sample["0"]:
+                pass
+        indices["0"] = buffer.get_indices(batch_size*inner_its)
+        while True:
+            message = con.recv(4096)
+            if not message: break
+        indices["0"] = None
 
 def start_server_data_receiver(port, buffer, can_sample):
 
@@ -48,7 +61,7 @@ def start_server_data_receiver(port, buffer, can_sample):
 if __name__ == "__main__":
 
     while True:
-        
+
         print("Waiting for hyperparameters")
         # start server for receiving hyperparameters
         soc = create_socket(7998)
@@ -72,15 +85,24 @@ if __name__ == "__main__":
 
         can_sample = manager.dict()
         can_sample["0"] = False
+
+        indices = manager.dict()
+        indices["0"] = None
+
         # crate servers for loading the minibatches
         running_processes = []
         for i in range(params["INNER_ITS"]):
-            p = Process(target = start_server_sender, args = (8000+i,buffer, params["BATCH_SIZE"],can_sample))
+            p = Process(target = start_server_sender, args = (8000+i,buffer, params["BATCH_SIZE"], indices ,can_sample))
             p.start()
             running_processes.append(p)
 
         # create server for receiving new data points and priority updates
         p = Process(target = start_server_data_receiver, args = (7999, buffer,can_sample))
+        p.start()
+        running_processes.append(p)
+
+        # sampling minibatches has to be done in the scope of the connection to this server
+        p = Process(target = start_server_indice_selector, args = (7997, buffer,indices, params["BATCH_SIZE"], params["INNER_ITS"], can_sample))
         p.start()
         running_processes.append(p)
 
