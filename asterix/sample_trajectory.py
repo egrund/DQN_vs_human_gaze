@@ -2,6 +2,14 @@ import gym
 import random as rand
 import tensorflow as tf
 import numpy as np
+import socket
+from multiprocessing import Process
+import os
+import pickle
+from buffer import Buffer, BufferManager
+from multiprocessing.managers import SyncManager
+
+from model import AgentModel
 
 def preprocess_image(image, imgx,imgy):
 
@@ -104,5 +112,35 @@ def create_trajectory(model, batch : int, epsilon : float,env_name : str ,frame_
     
     return s_a_r_s
 
+
+if __name__ == "__main__":
+    soc = socket.socket()
+    soc.bind(('192.168.0.158',8000))
+    soc.listen(1)
+    while True:
+        con,_ = soc.accept()
+        
+        with con:
+            fragments = []
+            while True:
+                fragment = con.recv()
+                if not fragment: break
+                fragments.append(fragment)
+            data = pickle.loads(b''.join(fragments))
+        
+        weights = data["weights"]
+        batch = data["batch"]
+        epsilon = data["epsilon"]
+        env_name = data["env_name"]
+        frame_skips = data["frame_skips"]
+        imgx = data["imgx"]
+        imgy = data["imgy"]
+
+        model = AgentModel(9)
+        model.set_weights(weights)
+        new_data = create_trajectory(model, batch, epsilon, env_name, frame_skips, imgx, imgy)
+        con,_ = soc.accept()
+        with con:
+            con.sendall(pickle.dumps(new_data))
 
 
