@@ -51,3 +51,26 @@ def create_center_prior_baseline(map):
     base[center_x,center_y] = 1
     base = ndi.gaussian_filter(base, sigma = 10) # compare my_reader_class.create_gaze_heatmap
     return base
+
+def compare_by_mean(gaze_list : list ,saliency_map):
+    """ calculates the distance of the mean value for the gaze list and a saliency map. the map made into a binary map first and only 1 values are used for the mean. 
+    it also outputs the distance of the gaze to the middle of the image, to see if that would have been a better classifier (only good prediction if dist to saliency smaller than to middle)
+    """
+
+    s_map_max = tf.reduce_max(saliency_map)
+    s_map_normal = saliency_map / s_map_max
+    s_map_rounded = round_with_threshold(s_map_normal)
+
+    gaze_mean = np.mean(gaze_list)
+    saliency_list = []
+    for x in range(saliency_map.shape[0]):
+        for y in range(saliency_map.shape[1]):
+            if s_map_rounded[x][y] == 1:
+                saliency_list.append((x,y))
+    saliency_mean = np.mean(saliency_list)
+
+    # check if the middle would have been a better guess
+    dist_middle = np.linalg.norm(gaze_mean - np.array([int(saliency_map.shape[0]/2),int(saliency_map.shape[1]/2)]))
+    dist_sal = np.linalg.norm(gaze_mean - saliency_mean)
+
+    return dist_sal, dist_middle

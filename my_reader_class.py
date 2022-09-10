@@ -23,7 +23,7 @@ class Reader :
         frameid2score (dict): what the current score was in the frame
     """
 
-    def __init__(self,file_dir = "C:/Users/eosan/Documents/Gaze_Data/asterix/160_RZ_9166697_Feb-20-16-46-45.txt", images_dir = "C:/Users/eosan/Documents/Gaze_Data/asterix/160_RZ_9166697_Feb-20-16-46-45_extracted/", image_type = ".png"):
+    def __init__(self,file_dir, images_dir, image_type = ".png"):
         self.file_dir = file_dir
         self.images_dir = images_dir
         self.x_dim_pic = 160
