@@ -21,8 +21,6 @@ class Buffer:
         self.priorities = {}
         self.data = {}
 
-
-
     def clear(self):
 
         if self.keep_in_mem:
@@ -37,8 +35,7 @@ class Buffer:
     def extend(self, data):
 
         if self.use_prioritized_replay and not len(self.data.keys()) < self._max_buffer_size:
-            self.at_file = rand.randint(0,len(self.data.keys())-1)
-
+            self.at_file = list(self.data.values()).index(min(self.data.values()))
             for sars in data:
 
                 if self.keep_in_mem:
@@ -67,18 +64,18 @@ class Buffer:
                 if self.at_file > self._max_buffer_size:
                     self.at_file = 0
 
-    
-    def sample_minibatch(self, batch_size):
+    def get_indices(self, batch_size):
 
         if self.use_prioritized_replay:
-            pass
-            indices = rand.choices([int(key) for key in self.data.keys()],weights = self.priorities.values(), k = batch_size)
-
-            for index in indices:
-                self.priorities[str(index)] = 0
+            priorities = self.priorities.values()
+            indices = [int(key) for key in self.priorities.keys()]
+            indices = [index for _, index in sorted(zip(priorities, indices), key=lambda pair: pair[0], reverse=True)]
+            return indices[:batch_size]
 
         else: 
-            indices = rand.choices([int(key) for key in self.data.keys()],k = batch_size)
+            return rand.choices([int(key) for key in self.data.keys()],k = batch_size)
+    
+    def sample_minibatch(self, indices):
         
         s_a_r_s = []
 
