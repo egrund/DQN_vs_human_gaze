@@ -6,6 +6,7 @@ from model import AgentModel
 
 import matplotlib.pyplot as plt
 import tensorflow as tf
+from imageio.v2 import imread
 
 data = Reader(file_dir = "D:/Documents/Gaze_Data_Project/asterix/160_RZ_9166697_Feb-20-16-46-45.txt", images_dir = "D:/Documents/Gaze_Data_Project//asterix/160_RZ_9166697_Feb-20-16-46-45_extracted/")
 
@@ -33,13 +34,11 @@ MODE = 'black'
 heatmap = data.create_gaze_heatmap(I)
 model = AgentModel(9)
 model.load_weights('asterix_test/run8/model') # add path
-print("Shape gazemap: ", heatmap.shape)
 
 image = preprocess_image(tf.convert_to_tensor(data.get_image(I)),84,84)
-saliency = pert.calc_sarfa_saliency_for_image(image,model,mode=MODE)
-saliency = pert.image_to_size(saliency)
-
-print("Saliency Shape: ",saliency.shape)
+#saliency = pert.calc_sarfa_saliency_for_image(image,model,mode=MODE)
+#saliency = pert.image_to_size(saliency)
+saliency = imread("D:/Documents/Gaze_Data_Project/saliency_database/run8/" + str(I) + ".png")
 
 auc, map1, map2 = compare.heatmap_comparison_using_AUC(heatmap, saliency)
 
