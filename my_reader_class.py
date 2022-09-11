@@ -46,7 +46,7 @@ class Reader :
     def get_gaze(self,i):
         """returns a list of all gaze positions in frame i """
 
-        gaze_list = self.frameid2pos[self.frameid_list[i-1]]
+        gaze_list = self.frameid2pos[self.frameid_list[i]] # attentions, changed indexing. now 0 to end not 1 to end
         if(gaze_list == None):
             return []
         return gaze_list
