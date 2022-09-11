@@ -3,17 +3,21 @@ import numpy as np
 from scipy import ndimage as ndi 
 import tensorflow as tf
 
-def create_masks(image,sigma=5):
+def create_masks(image,sigma=5,step = 1):
     """creates an image with a mask around point (x,y) with radius sigma 
     
     Arguments: 
         image (numpy array) : an image of shape (x,y,1) 
         sigma (int>0) : controls the size of the mask
+        step (int>0) : how often to create a mask (for every pixel = 1, for every second = 2)
     """
     
     masks = []
+    start = 0
     for x in range(image.shape[0]):
-        for y in range(image.shape[1]):
+        for y in range(start,image.shape[1],step):
+            start += 1
+            if start > step +1: start = 0
             mask = np.zeros(shape=image.shape)
             mask[x,y] = 1
             mask = ndi.gaussian_filter(mask, sigma = sigma)
