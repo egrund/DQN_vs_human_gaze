@@ -60,6 +60,14 @@ def saliency_information_gain(fixation_map, saliency,epsilon=0.1):
     # calculation
     information_gain = ( 1/n ) * tf.reduce_sum(tf.multiply(fixation_map,log_saliency - log_prior))
     return information_gain.numpy()
+
+def saliency_information_gain_without_prior(fixation_map, saliency,epsilon=0.1):
+    log_saliency = np.log2(saliency + epsilon)
+    n = tf.reshape(fixation_map,[-1]).shape[0]
+
+    # calculation
+    information_gain = ( 1/n ) * tf.reduce_sum(tf.multiply(fixation_map,log_saliency))
+    return information_gain.numpy()
     
 def create_center_prior_baseline(map):
     """ creates a center prior baseline in the shape of map """
