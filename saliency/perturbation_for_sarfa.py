@@ -38,10 +38,12 @@ def perturb_image(image,mask,mode='blurred',perturbation = None):
     shape = image.shape
     if(mode != 'image'): # blurred default
         perturbation = ndi.gaussian_filter(image, sigma=5) # blurred
-    if(mode == 'black'):
-        perturbation = tf.zeros(shape=shape)
-    elif(mode == 'random'):
-        perturbation = tf.random.uniform(shape=shape, minval = 0.0, maxval = 1.0)
+        if(mode == 'black'):
+            perturbation = tf.zeros(shape=shape)
+        elif(mode == 'random'):
+            perturbation = tf.random.uniform(shape=shape, minval = 0.0, maxval = 1.0)
+        elif(mode == 'white'):
+            perturbation = tf.ones(shape=shape)
 
     # Hadamard product
     image1 = tf.multiply(image,(1-mask)) 
