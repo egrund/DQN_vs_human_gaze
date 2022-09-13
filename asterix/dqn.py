@@ -4,7 +4,7 @@ import queue
 import datetime
 import gym
 import socket
-from sample_trajectory import create_trajectory
+from sample_trajectory_client import create_trajectory_client_send,create_trajectory_client_receive
 import time
 import joblib
 import pickle
@@ -71,21 +71,39 @@ class agent:
 
 
             ##################################################
-            # sample new trajectory
-            start_time_sample = time.time()
-            q_new_samples = queue.Queue()
-            self.perform_sampling(reward_summary_writer,sample_correction_writer,current_epsilon,i,q_new_samples)
-            new_data = q_new_samples.get(block=True)
-            end_time_sample = time.time()
-
+            # initiate trajectory sampling
+            
+            soc = socket.socket()
+            connected = False
+            while not connected:
+                try: 
+                    soc.connect(('localhost',7995))
+                    connected = True
+                except:
+                    print("Could not connect to localhost on port" , 7995)
+            with soc:
+                soc.sendall(pickle.dumps({"weights" : self.model.get_weights(), "batch" : int(32*self.sample_correction)+1, "epsilon" : current_epsilon, "env_name" : self.env, "frame_skips" : 4, "imgx" : 84, "imgy" : 84}))
+               
             ##################################################
             # train 
 
             start_time_step = time.time()
             self.perform_training(None,None)
             self.perform_training(None,None)
+            self.perform_training(None,None)
+            self.perform_training(None,None)
+            self.perform_training(None,None)
             self.perform_training(dqn_summary_writer,i)
             end_time_step = time.time()
+
+            #############################################################
+            # retrieve trajectory samples
+
+            start_time_sample = time.time()
+            q_new_samples = queue.Queue()
+            self.perform_sampling(reward_summary_writer,sample_correction_writer,current_epsilon,i, q_new_samples)
+            new_data = q_new_samples.get(block=True)
+            end_time_sample = time.time()
 
             #############################################################
             # add new data to the buffer
@@ -159,7 +177,22 @@ class agent:
     def perform_sampling(self,reward_summary_writer,sample_correction_writer,current_epsilon,i, q):
         
         # sample new trajectory
-        new_data = create_trajectory(self.model,int(32*self.sample_correction)+1,current_epsilon,self.env,4,84,84)
+        fragments = []
+        soc = socket.socket()
+        connected = False
+        while not connected:
+            try: 
+                soc.connect(('localhost',7995))
+                connected = True
+            except:
+                print("Could not connect to localhost on port" , 7995)
+        fragments = []
+        with soc:
+            while True:
+                recvfile = soc.recv(4096)
+                if not recvfile: break
+                fragments.append(recvfile)
+        new_data = pickle.loads(b''.join(fragments))
 
         self.sample_correction = (self.samples_from_env/len(new_data))*self.sample_correction
 
@@ -227,7 +260,7 @@ class agent:
                         old_q_value = tf.gather(self.model(s,training=False),tf.cast(a,dtype=tf.int32),batch_dims=1)
                         new_q_value = tf.gather(self.model_target(s,training=False),a_new, batch_dims=1)
 
-                        TD_error = r + tf.constant(0.99) * new_q_value - old_q_value
+                        TD_error = tf.abs(r + tf.constant(0.99) * new_q_value - old_q_value)
                         TD_error = TD_error.numpy()
 
 
@@ -237,6 +270,8 @@ class agent:
 
         
         if self.use_prioritized_replay:
+            print("max: ", max(list(td.values())))
+            print("min: ", min(list(td.values())))
             self.update_priorities(td)
 
         # apply polyak averaging
