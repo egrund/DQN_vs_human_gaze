@@ -81,7 +81,7 @@ if __name__ == "__main__":
 
         # create buffer
         buffer = manager.Buffer(params["BUFFER_SIZE"], params["BUFFER_MIN"], params["BUFFER_PATH"], params["KEEP_IN_MEM"], params["USE_PRIORITIZED_REPLAY"])
-        buffer.clear()
+        #buffer.clear()
 
         can_sample = manager.dict()
         can_sample["0"] = False
