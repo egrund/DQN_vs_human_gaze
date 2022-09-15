@@ -31,13 +31,13 @@ perturbation = tf.zeros(shape=images_same[0].shape)
 
 #perturbed_image = pert.perturb_image(images_same,mask = masks1[200],mode=MODE,perturbation = perturbation)
 #saliency_dif = pert.calc_sarfa_saliency_for_image(images_dif,model,mode=MODE,masks=masks1,perturbation = perturbation)
-#saliency_dif = ndi.gaussian_filter(ndi.gaussian_filter(saliency_dif, sigma=0.75),sigma=0.75)
+#saliency_dif = ndi.gaussian_filter(ndi.gaussian_filter(saliency_dif, sigma=0.8),sigma=0.8)
 saliency_same = pert.calc_sarfa_saliency_for_image(images_same,model,mode=MODE,masks=masks1,perturbation = perturbation)
-saliency_same = ndi.gaussian_filter(ndi.gaussian_filter(saliency_same, sigma=0.75),sigma=0.75)
+saliency_same = ndi.gaussian_filter(ndi.gaussian_filter(saliency_same, sigma=0.8),sigma=0.8)
 
 # calculate
 #saliencies = pert.calc_sarfa_saliency_for_each_image(images_dif,model,mode='image',masks=masks1,perturbation = perturbation)
-#saliencies = [ndi.gaussian_filter(ndi.gaussian_filter(saliency, sigma=0.75),sigma=0.75) for saliency in saliencies]
+#saliencies = [ndi.gaussian_filter(ndi.gaussian_filter(saliency, sigma=0.8),sigma=0.8) for saliency in saliencies]
 
 # load
 saliencies = [ imread("D:/Documents/Gaze_Data_Project/saliency_database_test/" + str(I) + "_" + str(j) + ".png") for j in range(0,FRAME_SKIPS,1)]

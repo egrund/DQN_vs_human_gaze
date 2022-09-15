@@ -21,7 +21,7 @@ MODE = 'image' #'blurred' # 'black', 'white', 'random'
 SIGMA = 5 # size of perturbation
 FRAMES_START = 0
 FRAMES_END = 1000
-SIGMA_SALIENCY = 0.75 # because calculate saliency only for every second pixel
+SIGMA_SALIENCY = 0.8 # because calculate saliency only for every second pixel
 
 model = AgentModel(9)
 model.load_weights('asterix_test/run8/model') # add path
