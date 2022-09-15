@@ -70,27 +70,30 @@ def image_to_size(image,y=160,x=210):
     image = tf.image.resize(image,size=(x,y))
     return image
 
-def calc_sarfa_saliency_for_image(image, model, mode = 'blurred', masks = None, perturbation = None, frame_skips = 4):
+def calc_sarfa_saliency_for_image(images, model, mode = 'blurred', masks = None, perturbation = None):
     """ calculates the saliency for an whole image 
     
     Arguments: 
-        image: the perprocessed image
+        image (List): the perprocessed images to stack
         model: the NN to predict the values
         mode (String): mode of perturbation see perturb_image
         sigma
         frame_skips (int): how many frames the model gets at once
     """
 
-    observation = tf.repeat(image,frame_skips,axis=-1) # model gets several times the same image
+    # observation = tf.repeat(image,frame_skips,axis=-1) # model gets several times the same image
+    # stack the 4 images
+    observation = tf.concat(images,axis=-1)
     q_vals = tf.squeeze(model(tf.expand_dims(observation,axis=0),training = False),axis=0)
     action = tf.argmax(q_vals).numpy()
     if masks == None:
-        masks = create_masks(image,sigma=5) # one mask for every pixel
-    saliency = np.zeros(shape=(image.shape[0],image.shape[1],1)) # in case image is colourful
+        masks = create_masks(images[0],sigma=5) # one mask for every pixel
+    saliency = np.zeros(shape=(images[0].shape[0],images[0].shape[1],1)) # in case image is colourful
 
     for mask,x,y in masks:
-        p_image = tf.convert_to_tensor(perturb_image(image.numpy(),mask, mode,perturbation))
-        observation = tf.repeat(p_image,frame_skips,axis=-1) # model gets several times the same image
+        p_images = [tf.convert_to_tensor(perturb_image(image.numpy(),mask, mode,perturbation)) for image in images]
+        #observation = tf.repeat(p_image,frame_skips,axis=-1) # model gets several times the same image
+        observation = tf.concat(p_images,axis=-1)
 
         p_q_vals = tf.squeeze(model(tf.expand_dims(observation,axis=0),training = False),axis = 0)
         sal,_,_,_,_,_ = computeSaliencyUsingSarfa(action,array_to_dict(q_vals),array_to_dict(p_q_vals))
@@ -98,20 +101,49 @@ def calc_sarfa_saliency_for_image(image, model, mode = 'blurred', masks = None, 
 
     return saliency
 
-def my_perturbance_map(image,model,mode='blurred',masks = None, perturbation = None, frame_skips=4):
-    """creates a binary map with pixels being blurred around changing the action having a value of 1, pixels not changing the action having a value of zero """
-
-    observation = tf.repeat(image,frame_skips,axis=-1) # model gets several times the same image
+def calc_sarfa_saliency_for_each_image(images,model,mode='blurred', masks=None, perturbation = None):
+    """ only perturbes one image at a time to create 4 saliency maps 
+    more Information in some parts, but not worth it. """
+    
+    # stack the 4 images
+    observation = tf.concat(images,axis=-1)
     q_vals = tf.squeeze(model(tf.expand_dims(observation,axis=0),training = False),axis=0)
     action = tf.argmax(q_vals).numpy()
     if masks == None:
-        masks = create_masks(image,sigma=5) # one mask for every pixel
-    saliency = np.zeros(shape=(image.shape[0],image.shape[1],1)) # in case image is colourful
+        masks = create_masks(images[0],sigma=5) # one mask for every pixel
+
+    saliencies = []
+    for to_perturb in range(4): # compute one for each image
+        saliency = np.zeros(shape=(images[0].shape[0],images[0].shape[1],1)) # in case image is colourful
+
+        for mask,x,y in masks:
+            p_images = [tf.convert_to_tensor(perturb_image(images[to_perturb].numpy(),mask, mode,perturbation)) if j == to_perturb else images[j] for j in range(4)]
+            #observation = tf.repeat(p_image,frame_skips,axis=-1) # model gets several times the same image
+            observation = tf.concat(p_images,axis=-1)
+
+            p_q_vals = tf.squeeze(model(tf.expand_dims(observation,axis=0),training = False),axis = 0)
+            sal,_,_,_,_,_ = computeSaliencyUsingSarfa(action,array_to_dict(q_vals),array_to_dict(p_q_vals))
+            saliency[x,y] = sal
+        saliencies.append(saliency)
+
+    return saliencies
+
+def my_perturbance_map(images,model,mode='blurred',masks = None, perturbation = None):
+    """creates a binary map with pixels being blurred around changing the action having a value of 1, pixels not changing the action having a value of zero """
+
+    #observation = tf.repeat(image,frame_skips,axis=-1) # model gets several times the same image
+    observation = tf.concat(images,axis=-1)
+    q_vals = tf.squeeze(model(tf.expand_dims(observation,axis=0),training = False),axis=0)
+    action = tf.argmax(q_vals).numpy()
+    if masks == None:
+        masks = create_masks(images[0],sigma=5) # one mask for every pixel
+    saliency = np.zeros(shape=(images[0].shape[0],images[0].shape[1],1)) # in case image is colourful
 
     for mask,x,y in masks:
-        p_image = tf.convert_to_tensor(perturb_image(image.numpy(),mask, mode,perturbation))
+        p_images = [tf.convert_to_tensor(perturb_image(image.numpy(),mask, mode,perturbation)) for image in images]
 
-        observation = tf.repeat(p_image,frame_skips,axis=-1) # model gets several times the same image
+        #observation = tf.repeat(p_image,frame_skips,axis=-1) # model gets several times the same image
+        observation = tf.concat(p_images,axis=-1)
         p_q_vals = tf.squeeze(model(tf.expand_dims(observation,axis=0),training = False),axis = 0)
         p_action = tf.argmax(p_q_vals).numpy()
         if(p_action != action):

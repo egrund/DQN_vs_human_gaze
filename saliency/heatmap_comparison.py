@@ -1,46 +1,57 @@
+# contains several functions for comparing the gaze data as heatmaps or fixation location map or list of locations with a saliency heatmap
+
 from sklearn.metrics import roc_auc_score
 import tensorflow as tf
 import numpy as np
 from scipy import ndimage as ndi 
 
-def heatmap_comparison_using_AUC(map1, map2):
-    """ binary classifier: Area Under ROC Curve """
+def heatmap_comparison_using_AUC(gaze, saliency):
+    """ binary classifier: Area Under ROC Curve 
 
-    # make map between 0 and 1
-    map1_max = tf.reduce_max(map1)
-    map2_max = tf.reduce_max(map2)
-    map1_normal = map1 / map1_max
-    map2_normal = map2 / map2_max
-    # make map1 only 0 or 1 
-    map1_rounded = round_with_threshold(map1_normal)
-    map2_rounded = round_with_threshold(map2_normal)
-    # flatten both
-    map1_flat = tf.reshape(map1_rounded,[-1]).numpy()
-    map2_flat = tf.reshape(map2_rounded,[-1]).numpy()
+    Parameters:
+        gaze (heatmap or location map): heatmap -> AUC, location map -> AUC-Judd
+        saliency (heatmap): classifier
+    """
 
-    auc_score = roc_auc_score(map1_flat, map2_flat)
+    gaze_flat = to_binary_flat(gaze)
+    saliency_flat = to_binary_flat(saliency)
 
-    return auc_score, map1_rounded, map2_rounded
+    auc_score = roc_auc_score(gaze_flat, saliency_flat)
+
+    return auc_score
 
 def heatmap_comparison_percentage_saliency_also_true(gaze,saliency):
-    # make map between 0 and 1
-    map1_max = tf.reduce_max(gaze)
-    map2_max = tf.reduce_max(saliency)
-    map1_normal = gaze / map1_max
-    map2_normal = saliency / map2_max
-    # make map1 only 0 or 1 
-    map1_rounded = round_with_threshold(map1_normal)
-    map2_rounded = round_with_threshold(map2_normal)
-    # flatten both
-    gaze_flat = tf.reshape(map1_rounded,[-1]).numpy()
-    sal_flat = tf.reshape(map2_rounded,[-1]).numpy()
+    """ calculates the percentage of points being one from the saliency map, that are one on the gaze heatmap (True Positive) """
+
+    gaze_flat = to_binary_flat(gaze)
+    sal_flat = to_binary_flat(saliency)
 
     sal_reduced = np.delete(sal_flat, np.where(gaze_flat == 0))
 
     percentage_true = np.sum(sal_reduced) / sal_reduced.shape[0]
     return percentage_true
 
-def round_with_threshold(array,threshold=0.2, min=0, max=1):
+def heatmap_comparison_percentage_same(gaze,saliency):
+
+    gaze_flat = to_binary_flat(gaze)
+    sal_flat = to_binary_flat(saliency)
+
+    total = gaze_flat.shape[0]
+    same = np.where(gaze_flat == sal_flat,1,0)
+    return np.sum(same) / total
+
+def to_binary_flat(map):
+    """ creates a binary flat map from a heatmap """
+    # make map between 0 and 1
+    map_max = tf.reduce_max(map)
+    map_normal = map / map_max
+    # make map1 only 0 or 1 
+    map_rounded = round_with_threshold(map_normal)
+    # flatten both
+    map_flat = tf.reshape(map_rounded,[-1]).numpy()
+    return map_flat
+
+def round_with_threshold(array,threshold=0.1, min=0, max=1):
     return np.where(array > threshold, max, min)
 
 def saliency_information_gain(fixation_map, saliency,epsilon=0.1):
@@ -59,14 +70,6 @@ def saliency_information_gain(fixation_map, saliency,epsilon=0.1):
 
     # calculation
     information_gain = ( 1/n ) * tf.reduce_sum(tf.multiply(fixation_map,log_saliency - log_prior))
-    return information_gain.numpy()
-
-def saliency_information_gain_without_prior(fixation_map, saliency,epsilon=0.1):
-    log_saliency = np.log2(saliency + epsilon)
-    n = tf.reshape(fixation_map,[-1]).shape[0]
-
-    # calculation
-    information_gain = ( 1/n ) * tf.reduce_sum(tf.multiply(fixation_map,log_saliency))
     return information_gain.numpy()
     
 def create_center_prior_baseline(map):
@@ -101,3 +104,7 @@ def compare_by_mean(gaze_list : list ,saliency_map):
     dist_sal = np.linalg.norm(gaze_mean - saliency_mean) / numerator
 
     return dist_sal, dist_middle
+
+def heatmap_correlation(gaze_map,saliency_map):
+    """ compares how similar the two input maps are by using correlation """
+    #return np.corrcoef(gaze_map,saliency_map)
