@@ -18,9 +18,9 @@ data = Reader(file_dir = "D:/Documents/Gaze_Data_Project/asterix/160_RZ_9166697_
 FRAME_SKIPS = 4
 I_MAX = data.get_number_frames()
 MODE = 'image' #'blurred' # 'black', 'white', 'random'
-SIGMA = 5 # size of perturbation
-FRAMES_START = 0
-FRAMES_END = 1000
+SIGMA = 2.8 # size of perturbation
+FRAMES_START = 542
+FRAMES_END = 10000
 SIGMA_SALIENCY = 0.8 # because calculate saliency only for every second pixel
 
 model = AgentModel(9)
@@ -55,7 +55,7 @@ for i in range(FRAMES_START,FRAMES_END):
 	original_image = tf.convert_to_tensor(data.get_image(i+4,mode="F"))
 	image_saliency = (tf.squeeze(saliency,axis=-1) + original_image/255).numpy()
 
-	path = "saliency_database_dif/run8_on_image/colourful" + str(i) + "-" + str(i+3) + ".png"
+	path = "saliency_database_dif/run8_on_image/" + str(i) + "-" + str(i+3) + ".png"
 	imwrite(path,image_saliency)
 
 end = time.time()

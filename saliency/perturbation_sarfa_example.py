@@ -14,7 +14,7 @@ from imageio.v2 import imread
 FRAME_SKIPS = 4
 I = 700 # index of frame (1 to data.get_number_frames()) # for other index have to create the images
 MODE = 'image' #'blurred' # 'black', 'white', 'random'
-SIGMA = 5 # size of perturbation
+SIGMA = 2.8 # size of perturbation
 
 data = Reader(file_dir = "D:/Documents/Gaze_Data_Project/asterix/160_RZ_9166697_Feb-20-16-46-45.txt", images_dir = "D:/Documents/Gaze_Data_Project//asterix/160_RZ_9166697_Feb-20-16-46-45_extracted/") 
 #data = Reader(file_dir = "/media/egrund/Storage/Documents/Gaze_Data_Project/asterix/160_RZ_9166697_Feb-20-16-46-45.txt", images_dir = "/media/egrund/Storage/Documents/Gaze_Data_Project/asterix/160_RZ_9166697_Feb-20-16-46-45_extracted/") 
