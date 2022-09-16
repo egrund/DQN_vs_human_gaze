@@ -8,7 +8,6 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import time
 from imageio.v2 import imwrite
-from scipy import ndimage as ndi 
 
 start = time.time()
 
@@ -19,9 +18,8 @@ FRAME_SKIPS = 4
 I_MAX = data.get_number_frames()
 MODE = 'image' #'blurred' # 'black', 'white', 'random'
 SIGMA = 2.8 # size of perturbation
-FRAMES_START = 1200
-FRAMES_END = 10000
-#SIGMA_SALIENCY = 0.8 # because calculate saliency only for every second pixel
+FRAMES_START = 0
+FRAMES_END = 2000
 
 model = AgentModel(9)
 model.load_weights('asterix_test/run8/model') # add path
@@ -35,19 +33,18 @@ for i in range(FRAMES_START,FRAMES_END):
 	
 	images = [preprocess_image(tf.convert_to_tensor(data.get_image(j)),84,84) for j in range(i,i+4)]
 
-	# 1 map
 	saliency = pert.calc_sarfa_saliency(images,model,mode=MODE,masks=masks, perturbation = perturbation)
 	saliency = pert.image_to_size(saliency/tf.reduce_max(saliency))
 	
 	# save image
-	path = "saliency_database_dif/run8/" + str(i) + "-" + str(i+3) + ".png"
+	path = "saliency_database/run8/" + str(i) + "-" + str(i+3) + ".png"
 	imwrite(path,saliency)
 
 	# save image on baseline image
-	original_image = tf.convert_to_tensor(data.get_image(i+4,mode="F"))
+	original_image = tf.convert_to_tensor(data.get_image(i+3,mode="F"))
 	image_saliency = (tf.squeeze(saliency,axis=-1) + original_image/255).numpy()
 
-	path = "saliency_database_dif/run8_on_image/" + str(i) + "-" + str(i+3) + ".png"
+	path = "saliency_database/run8_on_image/" + str(i) + "-" + str(i+3) + "on_image.png"
 	imwrite(path,image_saliency)
 
 end = time.time()
