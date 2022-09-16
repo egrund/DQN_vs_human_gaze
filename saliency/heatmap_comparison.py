@@ -51,7 +51,7 @@ def to_binary_flat(map):
     map_flat = tf.reshape(map_rounded,[-1]).numpy()
     return map_flat
 
-def round_with_threshold(array,threshold=0.1, min=0, max=1):
+def round_with_threshold(array,threshold=0.2, min=0, max=1):
     return np.where(array > threshold, max, min)
 
 def saliency_information_gain(fixation_map, saliency,epsilon=0.1):
