@@ -25,15 +25,14 @@ model.load_weights('asterix_test/run8/model') # add path
 original_images = [ tf.convert_to_tensor(data.get_image(i)) for i in range(I,I+4)]
 #images_dif = [ preprocess_image(tf.convert_to_tensor(original_image),84,84) for original_image in original_images]
 images_same = [preprocess_image(tf.convert_to_tensor(original_images[0]),84,84)] *4
-masks1 = pert.create_masks(images_same[0],sigma=SIGMA,step=2)
-#masks2 = pert.create_masks(images[0],sigma=SIGMA,step=1)
+masks1 = pert.create_masks(images_same[0],sigma=SIGMA)#every second
+#masks2 = pert.create_masks(images[0],sigma=SIGMA,step_hor=1,step_ver=1)
 perturbation = tf.zeros(shape=images_same[0].shape)
 
 #perturbed_image = pert.perturb_image(images_same,mask = masks1[200],mode=MODE,perturbation = perturbation)
 #saliency_dif = pert.calc_sarfa_saliency_for_image(images_dif,model,mode=MODE,masks=masks1,perturbation = perturbation)
 #saliency_dif = ndi.gaussian_filter(ndi.gaussian_filter(saliency_dif, sigma=0.8),sigma=0.8)
-saliency_same = pert.calc_sarfa_saliency_for_image(images_same,model,mode=MODE,masks=masks1,perturbation = perturbation)
-saliency_same = ndi.gaussian_filter(ndi.gaussian_filter(saliency_same, sigma=0.8),sigma=0.8)
+saliency_same = pert.calc_sarfa_saliency(images_same,model,mode=MODE,masks=masks1,perturbation = perturbation)
 
 # calculate
 #saliencies = pert.calc_sarfa_saliency_for_each_image(images_dif,model,mode='image',masks=masks1,perturbation = perturbation)

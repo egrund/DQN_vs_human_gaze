@@ -19,15 +19,15 @@ FRAME_SKIPS = 4
 I_MAX = data.get_number_frames()
 MODE = 'image' #'blurred' # 'black', 'white', 'random'
 SIGMA = 2.8 # size of perturbation
-FRAMES_START = 542
+FRAMES_START = 1200
 FRAMES_END = 10000
-SIGMA_SALIENCY = 0.8 # because calculate saliency only for every second pixel
+#SIGMA_SALIENCY = 0.8 # because calculate saliency only for every second pixel
 
 model = AgentModel(9)
 model.load_weights('asterix_test/run8/model') # add path
 
 image = preprocess_image(tf.convert_to_tensor(data.get_image(0)),84,84)
-masks = pert.create_masks(image,sigma=SIGMA,step=2)
+masks = pert.create_masks(image,sigma=SIGMA,step_hor=2,step_ver=2)
 perturbation = tf.zeros(shape=image.shape) # save 10 seconds per image by only creating this one
 
 for i in range(FRAMES_START,FRAMES_END):
@@ -36,20 +36,12 @@ for i in range(FRAMES_START,FRAMES_END):
 	images = [preprocess_image(tf.convert_to_tensor(data.get_image(j)),84,84) for j in range(i,i+4)]
 
 	# 1 map
-	saliency = pert.calc_sarfa_saliency_for_image(images,model,mode=MODE,masks=masks, perturbation = perturbation)
-	saliency = ndi.gaussian_filter(ndi.gaussian_filter(saliency, sigma=SIGMA_SALIENCY), sigma=SIGMA_SALIENCY)
+	saliency = pert.calc_sarfa_saliency(images,model,mode=MODE,masks=masks, perturbation = perturbation)
 	saliency = pert.image_to_size(saliency/tf.reduce_max(saliency))
-
-	# 4 maps
-	#saliencies = pert.calc_sarfa_saliency_for_each_image(images,model,mode=MODE,masks=masks, perturbation = perturbation)
-	#saliencies = [ndi.gaussian_filter(ndi.gaussian_filter(saliency, sigma=SIGMA_SALIENCY),sigma=SIGMA_SALIENCY) for saliency in saliencies]
-	#saliencies = [pert.image_to_size(saliency) for saliency in saliencies]
 	
 	# save image
 	path = "saliency_database_dif/run8/" + str(i) + "-" + str(i+3) + ".png"
 	imwrite(path,saliency)
-	#for j in range(FRAME_SKIPS):
-	#	imwrite(path + "_" + str(j) + ".png", saliencies[j])
 
 	# save image on baseline image
 	original_image = tf.convert_to_tensor(data.get_image(i+4,mode="F"))
