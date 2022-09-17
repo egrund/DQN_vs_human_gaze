@@ -36,8 +36,8 @@ def heatmap_comparison_percentage_same(gaze,saliency):
     gaze_flat = to_binary_flat(gaze)
     sal_flat = to_binary_flat(saliency)
 
-    total = gaze_flat.shape[0]
-    same = np.where(gaze_flat == sal_flat,1,0)
+    total = gaze_flat.shape[0] # 33600
+    same = np.where(gaze_flat == sal_flat,1,0) # condition, true, false
     return np.sum(same) / total
 
 def to_binary_flat(map):
@@ -45,9 +45,9 @@ def to_binary_flat(map):
     # make map between 0 and 1
     map_max = tf.reduce_max(map)
     map_normal = map / map_max
-    # make map1 only 0 or 1 
+    # make map only 0 or 1 
     map_rounded = round_with_threshold(map_normal)
-    # flatten both
+    # flatten
     map_flat = tf.reshape(map_rounded,[-1]).numpy()
     return map_flat
 
@@ -78,7 +78,7 @@ def create_center_prior_baseline(map):
     center_x = base.shape[0] // 2
     center_y = base.shape[1] //2
     base[center_x,center_y] = 1
-    base = ndi.gaussian_filter(base, sigma = 10) # compare my_reader_class.create_gaze_heatmap
+    base = ndi.gaussian_filter(base, sigma = 7) # compare my_reader_class.create_gaze_heatmap
     return base
 
 def compare_by_mean(gaze_list : list ,saliency_map):
@@ -107,4 +107,6 @@ def compare_by_mean(gaze_list : list ,saliency_map):
 
 def heatmap_correlation(gaze_map,saliency_map):
     """ compares how similar the two input maps are by using correlation """
-    #return np.corrcoef(gaze_map,saliency_map)
+    gaze_flat = gaze_map.flatten()
+    sal_flat = saliency_map.flatten()
+    return np.corrcoef(gaze_flat,sal_flat)

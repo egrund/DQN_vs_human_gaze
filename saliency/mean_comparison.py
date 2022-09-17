@@ -1,57 +1,81 @@
 from my_reader_class import Reader
 import heatmap_comparison as compare 
 import perturbation_for_sarfa as pert
-from sample_trajectory import preprocess_image
-from model import AgentModel
 
-import tensorflow as tf
 import numpy as np
-import matplotlib.pyplot as plt
-from imageio.v2 import imread
 import random as rand
-from scipy import ndimage as ndi 
+import time
 
-# two random images
-# data = Reader(file_dir = "/media/egrund/Storage/Documents/Gaze_Data_Project/asterix/160_RZ_9166697_Feb-20-16-46-45.txt", images_dir = "/media/egrund/Storage/Documents/Gaze_Data_Project//asterix/160_RZ_9166697_Feb-20-16-46-45_extracted/")
-data = Reader(file_dir = "D:/Documents/Gaze_Data_Project/asterix/160_RZ_9166697_Feb-20-16-46-45.txt", images_dir = "D:/Documents/Gaze_Data_Project/asterix/160_RZ_9166697_Feb-20-16-46-45_extracted/")
-# compare human gaze points with sarfa saliency heatmap
+print()
+print("Test Mean")
+print("------------------")
+print()
 
-ANZAHL = 1000
+episodes = ["160_RZ_9166697_Feb-20-16-46-45","167_JAW_2356024_Mar-29-15-42-54"]
+EPISODE = 1
+rand.seed(42)
 
-av_distance = 0
-av_middle = 0
-for i in range(0,ANZAHL,1):
+data = Reader(file_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[EPISODE] +".txt", images_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[EPISODE] +"_extracted/")
+
+START = 0
+LAST = 2000 # have 2000
+STEP = 1
+
+start = time.time()
+
+saliencies = pert.load_saliency(START,LAST,"D:/Documents/Gaze_Data_Project/saliency_database/" + episodes[EPISODE] +"/run8/",STEP)
+
+av_distance = []
+av_middle = []
+for i in range(START,LAST+1,STEP):
     if not data.get_gaze(i): # if the human did not look anywhere
         continue
-    gaze_list = np.array(data.get_gaze(i)) # starts with 0 now
-    saliency = imread("D:/Documents/Gaze_Data_Project/saliency_database/run8/" + str(i) + ".png")
-    saliency = ndi.gaussian_filter(saliency, sigma=0.75)
-
-    dif, dif_norm = compare.compare_by_mean(gaze_list, saliency)# tf.squeeze(saliency,axis=-1))
-    av_distance += dif
-    av_middle += dif_norm
+    gaze_list = np.array(data.get_gaze(i))
+    saliency = saliencies[int(i/STEP)]
+    dif, dif_norm = compare.compare_by_mean(gaze_list, saliency)
+    av_distance.append(dif)
+    av_middle.append(dif_norm)
     #print(i,"Distance gaze to dqn: ", dif, "Distance to middle: ", dif_norm)
 
-av_distance = av_distance / ANZAHL
-av_middle = av_middle / ANZAHL
-print("Average distance: ", av_distance, " Average distance to middle: ",av_middle)
+print("Mean distance: ", np.mean(av_distance)," Mean distance to middle: ", np.mean(av_middle))
+print("Variance distance: ", np.var(av_distance,ddof=1)," Variance distance to middle: ", np.var(av_middle,ddof=1))
 
 # random
-av_distance = 0
-av_middle = 0
-for i in range(0,ANZAHL,1):
+print("Randomly assigned saliency")
+av_distance = []
+av_middle = []
+for i in range(START,LAST+1,STEP):
     if not data.get_gaze(i): # if the human did not look anywhere
         continue
-    gaze_list = np.array(data.get_gaze(i)) # starts with 0 now
-    image_index = rand.randint(0,ANZAHL)
-    saliency = imread("D:/Documents/Gaze_Data_Project/saliency_database/run8/" + str(image_index) + ".png")
-    saliency = ndi.gaussian_filter(saliency, sigma=0.75)
+    gaze_list = np.array(data.get_gaze(i))
+    image_index = rand.randrange(START,LAST+1,STEP)
+    saliency = saliencies[int(image_index/STEP)]
+    dif, dif_norm = compare.compare_by_mean(gaze_list, saliency)
+    av_distance.append(dif)
+    av_middle.append(dif_norm)
+    #print(i,"RANDOM Distance gaze to dqn: ", dif, "Distance to middle: ", dif_norm)
 
-    dif, dif_norm = compare.compare_by_mean(gaze_list, saliency)# tf.squeeze(saliency,axis=-1))
-    av_distance += dif
-    av_middle += dif_norm
-    #print(i," RANDOM Distance gaze to dqn: ", dif, "Distance to middle: ", dif_norm)
+print("RANDOM Mean distance: ", np.mean(av_distance)," Mean distance to middle: ", np.mean(av_middle))
+print("RANDOM Variance distance: ", np.var(av_distance,ddof=1)," Variance distance to middle: ", np.var(av_middle,ddof=1))
 
-av_distance = av_distance / ANZAHL
-av_middle = av_middle / ANZAHL
-print("Average RANDOM distance: ", av_distance, " Average distance to middle: ",av_middle)
+print("Randomly assigned gaze heatmap")
+av_distance = []
+av_middle = []
+for i in range(START,LAST+1,STEP):
+    if not data.get_gaze(i): # if the human did not look anywhere
+        continue
+    gaze_list = np.array(data.get_gaze(i))
+    image_index = rand.randrange(START,LAST+1,STEP)
+    while not data.get_gaze(image_index) or i == image_index:
+        image_index = rand.randrange(START,LAST+1,STEP)
+    saliency = data.create_gaze_heatmap(image_index)
+    dif, dif_norm = compare.compare_by_mean(gaze_list, saliency)
+    av_distance.append(dif)
+    av_middle.append(dif_norm)
+    #print(i,"RANDOM Distance gaze to dqn: ", dif, "Distance to middle: ", dif_norm)
+
+print("RANDOM Mean distance: ", np.mean(av_distance)," Mean distance to middle: ", np.mean(av_middle))
+print("RANDOM Variance distance: ", np.var(av_distance,ddof=1)," Variance distance to middle: ", np.var(av_middle,ddof=1))
+
+end = time.time()
+print("Time needed: ",end - start)
