@@ -1,4 +1,4 @@
-# https://github.com/nikaashpuri/sarfa-saliency
+# Source: https://github.com/nikaashpuri/sarfa-saliency
 import math
 import numpy as np 
 from scipy.stats import entropy, wasserstein_distance
@@ -61,14 +61,16 @@ def computeSaliencyUsingSarfa(original_action, dict_q_vals_before_perturbation, 
     if probability_action_perturbed_state < probability_action_original_state: # harmonic mean
         answer = 2*dP*K/(dP + K)     
     
-    QmaxAnswer = computeSaliencyUsingQMaxChange(original_action, dict_q_vals_before_perturbation, dict_q_vals_after_perturbation)
-    action_gap_before_perturbation, action_gap_after_perturbation = computeSaliencyUsingActionGap(dict_q_vals_before_perturbation, dict_q_vals_after_perturbation)
+    # I made the next two comments, because they are computationally expensive but I do not use them
+    #QmaxAnswer = computeSaliencyUsingQMaxChange(original_action, dict_q_vals_before_perturbation, dict_q_vals_after_perturbation)
+    #action_gap_before_perturbation, action_gap_after_perturbation = computeSaliencyUsingActionGap(dict_q_vals_before_perturbation, dict_q_vals_after_perturbation)
     
     # print("Delta P = ", dP)
     # print("KL normalized = ", K)
     # print("KL normalized inverse = ", 1/K)
     # print(entry['saliency'])
-    return answer, dP, K, QmaxAnswer, action_gap_before_perturbation, action_gap_after_perturbation         
+    # The rest of the return I do not need and part of it do not compute for efficiency reasons
+    return answer #, dP, K, QmaxAnswer, action_gap_before_perturbation, action_gap_after_perturbation         
 
 def computeSaliencyUsingQMaxChange(original_action, dict_q_vals_before_perturbation, dict_q_vals_after_perturbation):
     answer = 0

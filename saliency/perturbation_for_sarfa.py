@@ -1,7 +1,14 @@
 from sarfa_saliency import computeSaliencyUsingSarfa
+from my_reader_class import Reader
+from sample_trajectory import preprocess_image
+from model import AgentModel
+
 import numpy as np
+import tensorflow as tf
 from scipy import ndimage as ndi 
 import tensorflow as tf
+from imageio.v2 import imwrite, imread
+import os
 
 def create_masks(image,sigma=5,step_hor = 2,step_ver = 2):
     """creates an image with a mask around point (x,y) with radius sigma 
@@ -79,7 +86,6 @@ def calc_sarfa_saliency(images, model, mode = 'blurred', masks = None, perturbat
         image (List): the perprocessed images to stack
         model: the NN to predict the values
         mode (String): mode of perturbation see perturb_image
-        sigma
         frame_skips (int): how many frames the model gets at once
     """
 
@@ -94,21 +100,23 @@ def calc_sarfa_saliency(images, model, mode = 'blurred', masks = None, perturbat
     saliency = np.zeros(shape=(len(masks),1)) # in case image is colourful
 
     for i,mask in enumerate(masks):
+        # perturb all images at the same spot
         p_images = [tf.convert_to_tensor(perturb_image(image.numpy(),mask, mode,perturbation)) for image in images]
         observation = tf.concat(p_images,axis=-1)
 
+        # calcualte the new q-values given the perturbed images
         p_q_vals = tf.squeeze(model(tf.expand_dims(observation,axis=0),training = False),axis = 0)
-        sal,_,_,_,_,_ = computeSaliencyUsingSarfa(action,array_to_dict(q_vals),array_to_dict(p_q_vals))
+        sal = computeSaliencyUsingSarfa(action,array_to_dict(q_vals),array_to_dict(p_q_vals))
         saliency[i] = sal
 
-    saliency = image_to_size(np.reshape(saliency, newshape=(x_sal,y_sal,1)),84,84)
+    # resize to input image of this function (was preprocessed)
+    saliency = image_to_size(np.reshape(saliency, newshape=(x_sal,y_sal,1)),images[0].shape[0],images[0].shape[1])
 
     return saliency
 
 def my_perturbance_map(images,model,mode='blurred',masks = None, perturbation = None):
     """creates a binary map with pixels being blurred around changing the action having a value of 1, pixels not changing the action having a value of zero """
 
-    #observation = tf.repeat(image,frame_skips,axis=-1) # model gets several times the same image
     observation = tf.concat(images,axis=-1)
     q_vals = tf.squeeze(model(tf.expand_dims(observation,axis=0),training = False),axis=0)
     action = tf.argmax(q_vals).numpy()
@@ -119,7 +127,6 @@ def my_perturbance_map(images,model,mode='blurred',masks = None, perturbation = 
     for mask,x,y in masks:
         p_images = [tf.convert_to_tensor(perturb_image(image.numpy(),mask, mode,perturbation)) for image in images]
 
-        #observation = tf.repeat(p_image,frame_skips,axis=-1) # model gets several times the same image
         observation = tf.concat(p_images,axis=-1)
         p_q_vals = tf.squeeze(model(tf.expand_dims(observation,axis=0),training = False),axis = 0)
         p_action = tf.argmax(p_q_vals).numpy()
@@ -127,3 +134,16 @@ def my_perturbance_map(images,model,mode='blurred',masks = None, perturbation = 
             saliency[x][y] = 1
 
     return saliency
+
+def load_saliency(start,last = None,path="",step=1):
+    """ loads in every 'step'th saliency start or start to last from given path 
+    returns saliency if last is None, else a List of saliencies """
+
+    FRAME_SKIPS = 4
+
+    if last == None:
+        saliency = imread(os.path.join(path,str(start)+"-"+str(start+FRAME_SKIPS-1) + ".png"))
+        return saliency
+    
+    saliencies = [ imread(os.path.join(path,str(i)+"-"+str(i+FRAME_SKIPS-1) + ".png")) for i in range(start,last +1,step)]
+    return saliencies
