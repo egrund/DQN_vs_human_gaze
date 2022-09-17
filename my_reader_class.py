@@ -43,10 +43,12 @@ class Reader :
 
         return imread(self.images_dir + self.frameid_list[i] + self.image_type, pilmode = mode)
 
-    def get_gaze(self,i):
-        """returns a list of all gaze positions in frame i """
+    def get_gaze(self,i,more = None):
+        """returns a list of all gaze positions in frame i , if more != None, so many frames, so taking also next frames"""
 
         gaze_list = self.frameid2pos[self.frameid_list[i]] # attentions, changed indexing. now 0 to end not 1 to end
+        if(more != None):
+            [gaze_list.extend(self.frameid2pos[self.frameid_list[j]]) for j in range(i+1,i+more)]
         if(gaze_list == None):
             return []
         return gaze_list
@@ -65,10 +67,10 @@ class Reader :
         plt.imshow(image,cmap = 'gray')
         plt.show()
 
-    def plot_gaze(self,i):
+    def plot_gaze(self,i,more = None):
         """scatters the gaze data of one frame i"""
 
-        gaze = self.get_gaze(i)
+        gaze = self.get_gaze(i,more)
         if(gaze == None):
             return
         gaze_list = np.array(gaze)
@@ -81,10 +83,10 @@ class Reader :
         ax.set_ylim([self.y_dim_pic,0])
         plt.show()
 
-    def create_gaze_map(self,i):
-        """ creates a map with 0 everywhere and 1 where the gaze is (rounded) """
+    def create_gaze_map(self,i,more = None):
+        """ creates a map with 0 everywhere and 1 where the gaze is (rounded) if more add the maps on top of each other """
 
-        gaze_list = self.get_gaze(i)
+        gaze_list = self.get_gaze(i,more)
         if(gaze_list == None):
             return None
         image = self.get_image(i,'F')
@@ -94,36 +96,34 @@ class Reader :
                 gaze_map[min(self.x_dim_pic,int(x)) -1, min(self.y_dim_pic,int(y))-1] = 1
         return gaze_map.T
 
-    def create_all_gaze_maps(self):
+    def create_all_gaze_maps(self,more = None):
         """ creates all the gaze maps for the trial (for every frame) """
         gaze_maps = list() 
         for i in range(self.get_number_frames()):
-            map = self.create_gaze_map(i)
+            map = self.create_gaze_map(i,more)
             gaze_maps.append(map)
         return gaze_maps
 
-    def create_gaze_heatmap(self,i):
+    def create_gaze_heatmap(self,i,more=None):
         """ creates a heatmap out of the gaze data of frame i """
         
-        heatmap = self.create_gaze_map(i)
-        heatmap = ndi.gaussian_filter(heatmap, sigma=10) # sigma should be one visual degree
+        heatmap = self.create_gaze_map(i,more)
+        heatmap = ndi.gaussian_filter(heatmap, sigma=7) # sigma should be one visual degree
         return heatmap 
 
-    def create_all_gaze_heatmaps(self):
+    def create_all_gaze_heatmaps(self,more = None):
         """ creates all the gaze heatmaps for the trial (for every frame) """
 
         heatmaps = list()
         for i in range(self.get_number_frames()):
-            heatmap = self.create_gaze_heatmap(i)
+            heatmap = self.create_gaze_heatmap(i,more)
             heatmaps.append(heatmap)
         return heatmaps
         
-    def plot_gaze_heatmap(self,i):
+    def plot_gaze_heatmap(self,i,more = None):
         """plots a heatmap of the gaze data of one frame"""
 
-        heatmap = self.create_gaze_heatmap(i)
-        if(heatmap == None):
-            return
+        heatmap = self.create_gaze_heatmap(i,more)
         fig = plt.figure(figsize = (7, 7))
         plt.imshow(heatmap, cmap = "jet")
         plt.show()
