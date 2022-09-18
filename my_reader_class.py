@@ -109,7 +109,8 @@ class Reader :
         
         heatmap = self.create_gaze_map(i,more)
         heatmap = ndi.gaussian_filter(heatmap, sigma=7) # sigma should be one visual degree
-        return heatmap 
+        
+        return heatmap / np.max(heatmap)
 
     def create_all_gaze_heatmaps(self,more = None):
         """ creates all the gaze heatmaps for the trial (for every frame) """

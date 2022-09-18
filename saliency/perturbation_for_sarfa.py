@@ -142,8 +142,8 @@ def load_saliency(start,last = None,path="",step=1):
     FRAME_SKIPS = 4
 
     if last == None:
-        saliency = imread(os.path.join(path,str(start)+"-"+str(start+FRAME_SKIPS-1) + ".png"))
-        return saliency
+        saliency = np.array(imread(os.path.join(path,str(start)+"-"+str(start+FRAME_SKIPS-1) + ".png")))
+        return saliency / np.max(saliency.astype(np.float32))
     
     saliencies = [ imread(os.path.join(path,str(i)+"-"+str(i+FRAME_SKIPS-1) + ".png")) for i in range(start,last +1,step)]
     return saliencies

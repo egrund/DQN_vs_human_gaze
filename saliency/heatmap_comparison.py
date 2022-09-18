@@ -105,8 +105,16 @@ def compare_by_mean(gaze_list : list ,saliency_map):
 
     return dist_sal, dist_middle
 
-def heatmap_correlation(gaze_map,saliency_map):
+def calc_correlation(gaze_map,saliency_map):
     """ compares how similar the two input maps are by using correlation """
     gaze_flat = gaze_map.flatten()
     sal_flat = saliency_map.flatten()
-    return np.corrcoef(gaze_flat,sal_flat)
+    correlation_matrix = np.corrcoef(gaze_flat,sal_flat)
+    return correlation_matrix[0,1]
+
+def heatmap_correlation(gaze_map,saliency_map):
+    """ calculates a correlation heatmap for the given input 
+    both should contains floats in the range of 0-1 """
+
+    cor_heatmap = tf.divide(tf.multiply(saliency_map,gaze_map),  tf.sqrt(tf.reduce_sum( tf.add(tf.square(saliency_map), tf.square(gaze_map)) ) ) )
+    return cor_heatmap
