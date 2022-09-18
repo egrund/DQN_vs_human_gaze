@@ -37,27 +37,31 @@ pi_white = pert.perturb_image(image,mask = mask,mode='image',perturbation=p_whit
 pi_random = pert.perturb_image(image,mask = mask,mode='image',perturbation=p_black)
 
 # plots
-fig, axs = plt.subplots(nrows=1, ncols=5, squeeze=False, figsize=(8, 8))
+fig, axs = plt.subplots(nrows=2, ncols=3, squeeze=False, figsize=(8, 8))
 
 axs[0,0].set_title('Preprocessed Image')
 axs[0,0].imshow(image/np.max(image))
 axs[0,0].axis('off')
 
-axs[0,1].set_title('Black')
-axs[0,1].imshow(pi_black/np.max(pi_black))
+axs[0,1].set_title('Mask')
+axs[0,1].imshow(mask)
 axs[0,1].axis('off')  
 
-axs[0,2].set_title('White')
-axs[0,2].imshow(pi_white/np.max(pi_white))
+axs[0,2].set_title('Black')
+axs[0,2].imshow(pi_black/np.max(pi_black))
 axs[0,2].axis('off')  
 
-axs[0,3].set_title('Blurred')
-axs[0,3].imshow( pi_blurred/np.max(pi_blurred))
-axs[0,3].axis('off')
+axs[1,0].set_title('White')
+axs[1,0].imshow(pi_white/np.max(pi_white))
+axs[1,0].axis('off')  
 
-axs[0,4].set_title('Random')
-axs[0,4].imshow(pi_random/np.max(pi_random))
-axs[0,4].axis('off')
+axs[1,1].set_title('Blurred')
+axs[1,1].imshow( pi_blurred/np.max(pi_blurred))
+axs[1,1].axis('off')
+
+axs[1,2].set_title('Random')
+axs[1,2].imshow(pi_random/np.max(pi_random))
+axs[1,2].axis('off')
 
 plt.tight_layout()
 plt.show()
