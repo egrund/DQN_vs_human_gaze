@@ -50,9 +50,9 @@ def perturb_image(image,mask,mode='blurred',perturbation = None):
         if(mode == 'black'):
             perturbation = tf.zeros(shape=shape)
         elif(mode == 'random'):
-            perturbation = tf.random.uniform(shape=shape, minval = 0.0, maxval = 1.0)
+            perturbation = tf.random.uniform(shape=image.shape, minval = np.min(image), maxval = np.max(image))
         elif(mode == 'white'):
-            perturbation = tf.ones(shape=shape)
+            perturbation = tf.fill(shape,tf.reduce_max(image))
 
     # Hadamard product
     image1 = tf.multiply(image,(1-mask)) 
@@ -146,4 +146,5 @@ def load_saliency(start,last = None,path="",step=1):
         return saliency / np.max(saliency.astype(np.float32))
     
     saliencies = [ imread(os.path.join(path,str(i)+"-"+str(i+FRAME_SKIPS-1) + ".png")) for i in range(start,last +1,step)]
+    saliencies = [ saliency /np.max(saliency.astype(np.float32)) for saliency in saliencies]
     return saliencies
