@@ -5,17 +5,18 @@ import perturbation_for_sarfa as pert
 import random as rand
 import time
 import numpy as np
+import scipy.stats as stats 
 
 # choose with what method to compare:
 modes = ["TP","same","AUC","IG","CC"] 
-MODE = 4
+MODE = 0
 # choose what data from the human to use
 # AUC + fixation = AUC-Judd
 # IG -> fixation
 # CC -> heatmap
 # rest choose
 data_modes = ["fixation","heatmap"]
-MODE_DATA = 1
+MODE_DATA = 0
 # choose from which episode to use the data
 episodes = ["160_RZ_9166697_Feb-20-16-46-45","167_JAW_2356024_Mar-29-15-42-54"]
 EPISODE = 0
@@ -36,7 +37,7 @@ rand.seed(42)
 
 data = Reader(file_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[EPISODE] +".txt", images_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[EPISODE] +"_extracted/")
 
-functions = [compare.heatmap_comparison_percentage_saliency_also_true,compare.heatmap_comparison_percentage_same,compare.heatmap_comparison_using_AUC,compare.saliency_information_gain,compare.heatmap_correlation]
+functions = [compare.heatmap_comparison_percentage_saliency_also_true,compare.heatmap_comparison_percentage_same,compare.heatmap_comparison_using_AUC,compare.saliency_information_gain,compare.calc_correlation]
 data_loaders = [data.create_gaze_map, data.create_gaze_heatmap]
 
 start = time.time()
@@ -67,7 +68,7 @@ print("Variance: ",np.var(list_values,ddof=1))
 # compare random matches
 print("Randomly assigned saliency")
 
-list_values = []
+list_valuesr1 = []
 for i in range(START,LAST+1,STEP):
     ix = int(i/STEP)
     if not gaze_lists[ix]: # if the human did not look anywhere
@@ -76,15 +77,15 @@ for i in range(START,LAST+1,STEP):
     image_index = rand.randrange(START,LAST+1,STEP)
     saliency = saliencies[int(image_index/STEP)]
     value = functions[MODE](heatmap, saliency)
-    list_values.append(value)
+    list_valuesr1.append(value)
     #print(i,modes[MODE]," RANDOM ",value)
 
-print("RANDOM Mean: ", np.mean(list_values))
-print("RANDOM Variance: ",np.var(list_values,ddof=1))
+print("RANDOM Mean: ", np.mean(list_valuesr1))
+print("RANDOM Variance: ",np.var(list_valuesr1,ddof=1))
 
 print("Randomly assigned gaze heatmap")
 
-list_values = []
+list_valuesr2 = []
 for i in range(START,LAST+1,STEP):
     ix = int(i/STEP)
     if not gaze_lists[ix]: # if the human did not look anywhere
@@ -97,11 +98,18 @@ for i in range(START,LAST+1,STEP):
 
     saliency = heatmaps[int(image_index/STEP)]
     value = functions[MODE](heatmap, saliency)
-    list_values.append(value)
+    list_valuesr2.append(value)
     #print(i,modes[MODE]," RANDOM ",value)
 
-print("RANDOM Mean: ", np.mean(list_values))
-print("RANDOM Variance: ",np.var(list_values,ddof=1))
+print("RANDOM Mean: ", np.mean(list_valuesr2))
+print("RANDOM Variance: ",np.var(list_valuesr2,ddof=1))
+
+
+# statistical p calculation
+print("t-test Analysis")
+print("to r1: ", stats.ttest_ind(a=list_values, b=list_valuesr1) )
+print("to r2: ", stats.ttest_ind(a=list_values, b=list_valuesr2) )
+print("r1 to r2: ", stats.ttest_ind(a=list_valuesr1, b=list_valuesr2) )
 
 end = time.time()
 print("Time needed: ",end - start)
