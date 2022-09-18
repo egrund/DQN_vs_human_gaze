@@ -9,14 +9,14 @@ import scipy.stats as stats
 
 # choose with what method to compare:
 modes = ["TP","same","AUC","IG","CC"] 
-MODE = 0
+MODE = 2
 # choose what data from the human to use
 # AUC + fixation = AUC-Judd
 # IG -> fixation
 # CC -> heatmap
 # rest choose
 data_modes = ["fixation","heatmap"]
-MODE_DATA = 0
+MODE_DATA = 1
 # choose from which episode to use the data
 episodes = ["160_RZ_9166697_Feb-20-16-46-45","167_JAW_2356024_Mar-29-15-42-54"]
 EPISODE = 0
@@ -83,7 +83,7 @@ for i in range(START,LAST+1,STEP):
 print("RANDOM Mean: ", np.mean(list_valuesr1))
 print("RANDOM Variance: ",np.var(list_valuesr1,ddof=1))
 
-print("Randomly assigned gaze heatmap")
+print("Randomly assigned gaze heatmap") # difficult with AUC
 
 list_valuesr2 = []
 for i in range(START,LAST+1,STEP):
@@ -107,9 +107,17 @@ print("RANDOM Variance: ",np.var(list_valuesr2,ddof=1))
 
 # statistical p calculation
 print("t-test Analysis")
-print("to r1: ", stats.ttest_ind(a=list_values, b=list_valuesr1) )
-print("to r2: ", stats.ttest_ind(a=list_values, b=list_valuesr2) )
-print("r1 to r2: ", stats.ttest_ind(a=list_valuesr1, b=list_valuesr2) )
+print("dif r1: ", compare.t_test(a=list_values, b=list_valuesr1) )
+print("dif r2: ", compare.t_test(a=list_values, b=list_valuesr2) )
+print("r1 dif r2: ", compare.t_test(a=list_valuesr1, b=list_valuesr2) )
+
+print("greater r1: ", compare.t_test(list_values,list_valuesr1,"greater") )
+print("greater r2: ", compare.t_test(list_values,list_valuesr2,"greater") )
+print("r1 greater r1: ", compare.t_test(list_valuesr1,list_valuesr2,"greater") )
+
+print("smaller r1: ", compare.t_test(list_values,list_valuesr1,"smaller") )
+print("smaller r2: ", compare.t_test(list_values,list_valuesr2,"smaller") )
+print("r1 maller r2: ", compare.t_test(list_valuesr1,list_valuesr2,"smaller") )
 
 end = time.time()
 print("Time needed: ",end - start)
