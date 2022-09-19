@@ -11,7 +11,7 @@ import tensorflow as tf
 episodes = ["160_RZ_9166697_Feb-20-16-46-45","167_JAW_2356024_Mar-29-15-42-54"]
 EPISODE = 0
 # choose which sample to use
-I = 100
+I = 24
 # you need to at least compare 2 sample to not end in and endless loop in the last part !
 
 FRAME_SKIPS = 4 # How many frames of gaze data to compare to the saliency map
@@ -23,9 +23,9 @@ print()
 
 rand.seed(42)
 
-data = Reader(file_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[EPISODE] +".txt", images_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[EPISODE] +"_extracted/")
+data = Reader(file_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[EPISODE] +".txt", images_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[EPISODE] +"/")
 
-saliency = pert.load_saliency(I,path = "D:/Documents/Gaze_Data_Project/saliency_database/" + episodes[EPISODE] +"/run8/")
+saliency = pert.load_saliency(I,path = "D:/Documents/Gaze_Data_Project/saliency_database/" + episodes[EPISODE] +"/best/")
 heatmap = data.create_gaze_heatmap(I,FRAME_SKIPS)
 
 cc = compare.calc_correlation(heatmap, saliency)

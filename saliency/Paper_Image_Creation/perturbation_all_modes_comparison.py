@@ -2,26 +2,25 @@
 
 import perturbation_for_sarfa as pert
 from my_reader_class import Reader
-from sample_trajectory import preprocess_image
 from model import AgentModel
 
 from scipy import ndimage as ndi 
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
-import time
 
 FRAME_SKIPS = 4
-I = 700 # index of frame (1 to data.get_number_frames())
+I = 52 # index of frame (1 to data.get_number_frames())
 SIGMA = 2.8 # size of perturbation
 
-data = Reader(file_dir = "D:/Documents/Gaze_Data_Project/asterix/160_RZ_9166697_Feb-20-16-46-45.txt", images_dir = "D:/Documents/Gaze_Data_Project//asterix/160_RZ_9166697_Feb-20-16-46-45_extracted/") 
+data = Reader(file_dir = "D:/Documents/Gaze_Data_Project/asterix/160_RZ_9166697_Feb-20-16-46-45.txt", images_dir = "D:/Documents/Gaze_Data_Project//asterix/160_RZ_9166697_Feb-20-16-46-45/") 
 model = AgentModel(9)
-model.load_weights('asterix_test/run8/model') # add path
+model.load_weights('asterix_test/best/model') # add path
 
 original_images = [ tf.convert_to_tensor(data.get_image(i)) for i in range(I,I+FRAME_SKIPS)]
-images = [ preprocess_image(tf.convert_to_tensor(original_image),84,84) for original_image in original_images]
+images = [ pert.preprocess_image(tf.convert_to_tensor(original_image),84,84) for original_image in original_images]
 masks = pert.create_masks(images[0],sigma=SIGMA)
+
 p_black = tf.zeros(shape=images[0].shape)
 p_blurred = ndi.gaussian_filter(images[0], sigma=5)
 p_white = tf.fill(images[0].shape,tf.reduce_max(images[0]))
