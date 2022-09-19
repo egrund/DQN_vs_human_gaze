@@ -1,14 +1,19 @@
 from sarfa_saliency import computeSaliencyUsingSarfa
-from my_reader_class import Reader
-from sample_trajectory import preprocess_image
-from model import AgentModel
 
 import numpy as np
 import tensorflow as tf
 from scipy import ndimage as ndi 
 import tensorflow as tf
-from imageio.v2 import imwrite, imread
+from imageio.v2 import imread
 import os
+
+@tf.function
+def preprocess_image(image, imgx = 84, imgy = 84):
+    """ preprocesses the image in the same way, as we did while training """
+    image = tf.cast(image,tf.float32)
+    image = tf.image.rgb_to_grayscale(image)
+    image = tf.image.resize(image,size=(imgx,imgy))
+    return image
 
 def create_masks(image,sigma=5,step_hor = 2,step_ver = 2):
     """creates an image with a mask around point (x,y) with radius sigma 

@@ -23,7 +23,7 @@ EPISODE = 0
 # choose which samples to use from the episode (make sure you have saved the saliency maps for all of them)
 START = 0
 LAST = 2000 # have 2000
-STEP = 1
+STEP = 4
 # you need to at least compare 2 sample to not end in and endless loop in the last part !
 
 FRAME_SKIPS = 4 # How many frames of gaze data to compare to the saliency map
@@ -35,14 +35,14 @@ print()
 
 rand.seed(42)
 
-data = Reader(file_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[EPISODE] +".txt", images_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[EPISODE] +"_extracted/")
+data = Reader(file_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[EPISODE] +".txt", images_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[EPISODE] +"/")
 
 functions = [compare.heatmap_comparison_percentage_saliency_also_true,compare.heatmap_comparison_percentage_same,compare.heatmap_comparison_using_AUC,compare.saliency_information_gain,compare.calc_correlation]
 data_loaders = [data.create_gaze_map, data.create_gaze_heatmap]
 
 start = time.time()
 
-saliencies = pert.load_saliency(START,LAST,"D:/Documents/Gaze_Data_Project/saliency_database/" + episodes[EPISODE] +"/run8/",STEP)
+saliencies = pert.load_saliency(START,LAST,"D:/Documents/Gaze_Data_Project/saliency_database/" + episodes[EPISODE] +"/best/",STEP)
 gaze_lists = [data.get_gaze(i,FRAME_SKIPS) for i in range(START,LAST+1,STEP)]
 data_maps = [ data_loaders[MODE_DATA](i,FRAME_SKIPS) for i in range(START,LAST+1,STEP)]
 
