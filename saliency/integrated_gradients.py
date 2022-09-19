@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_hub as hub
 
-from sample_trajectory import preprocess_image as prepro
+from perturbation_for_sarfa import preprocess_image as prepro
 
 def generate_path_inputs(baseline, input, alphas):
     """Generate m interpolated inputs between baseline and input features.
@@ -286,7 +286,6 @@ def convergence_check(model, attributions, baseline, input, target_class_idx):
     tf.print('Input score: {:.3f}'.format(input_score))
     tf.print('IG score: {:.3f}'.format(ig_score))     
     tf.print('Convergence delta: {:.3f}'.format(delta))
-
 
 if __name__ == '__main__':
 

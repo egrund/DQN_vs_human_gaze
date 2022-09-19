@@ -20,9 +20,9 @@ print("Test Pixel Binary")
 print("------------------")
 print()
 
-data = Reader(file_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[EPISODE] +".txt", images_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[EPISODE] +"_extracted/")
+data = Reader(file_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[EPISODE] +".txt", images_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[EPISODE] +"/")
 
-saliencies = pert.load_saliency(START,LAST,"D:/Documents/Gaze_Data_Project/saliency_database/" + episodes[EPISODE] +"/run8/",STEP)
+saliencies = pert.load_saliency(START,LAST,"D:/Documents/Gaze_Data_Project/saliency_database/" + episodes[EPISODE] +"/best/",STEP)
 sal_percent_list = [ np.mean(compare.to_binary_flat(sal)) for sal in saliencies ]
 sal_percent_1 = np.mean(sal_percent_list)
 print("Saliency average pixels that are one: ", sal_percent_1)

@@ -1,6 +1,5 @@
 import integrated_gradients as ig 
 from my_reader_class import Reader
-from sample_trajectory import preprocess_image
 from model import AgentModel
 import perturbation_for_sarfa as pert
 
@@ -12,15 +11,15 @@ FRAME_SKIPS = 4
 MODE_IG = 'Black'
 MODE_SARFA = 'image'
 M_STEPS = 10
-I = 76 # index of frame (1 to data.get_number_frames())
+I = 28 # index of frame (1 to data.get_number_frames())
 SIGMA = 2.8 # size of perturbation
 
-data = Reader(file_dir = "D:/Documents/Gaze_Data_Project/asterix/160_RZ_9166697_Feb-20-16-46-45.txt", images_dir = "D:/Documents/Gaze_Data_Project/asterix/160_RZ_9166697_Feb-20-16-46-45_extracted/")
+data = Reader(file_dir = "D:/Documents/Gaze_Data_Project/asterix/160_RZ_9166697_Feb-20-16-46-45.txt", images_dir = "D:/Documents/Gaze_Data_Project/asterix/160_RZ_9166697_Feb-20-16-46-45/")
 model = AgentModel(9)
-model.load_weights('asterix_test/run8/model') # add path
+model.load_weights('asterix_test/best/model') # add path
 
 original_images = [ tf.convert_to_tensor(data.get_image(i)) for i in range(I,I+4)]
-images = [ preprocess_image(tf.convert_to_tensor(original_image),84,84) for original_image in original_images]
+images = [ pert.preprocess_image(tf.convert_to_tensor(original_image),84,84) for original_image in original_images]
 observation = tf.concat(images,axis=-1) # for IG
 
 # for SARFA
