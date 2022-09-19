@@ -1,76 +1,64 @@
-import queue
-import time
-import dqn
-import tensorflow as tf
-from model import AgentModel
-import socket
-import pickle
-from sample_trajectory_server import create_trajectory
 
+import dqn
+from sample_trajectory import create_trajectory
+import joblib
+from pympler import asizeof
+from buffer import Buffer
+from model import AgentModel
+import tensorflow as tf
 if __name__ == '__main__':
 
 
     # set hyperparameters
     params = {
-    "BUFFER_SIZE" : 250000, # max size of buffer
-    "BUFFER_MIN" : 250000-1, # min size of buffer that has to be reached before training
-    "KEEP_IN_MEM" : False, # if buffer elements should be kept in memory. If false, samples are stored and retrieved from BUFFER_PATH
+    "BUFFER_SIZE" : 200000, # max size of buffer
+    "BUFFER_MIN" : 200000-1, # min size of buffer that has to be reached before training
+    "KEEP_IN_MEM" : True, # if buffer elements should be kept in memory. If false, samples are stored and retrieved from BUFFER_PATH
     "BUFFER_PATH" : "./buffer/", # path to where the buffer data should be stored
     "USE_PRIORITIZED_REPLAY" : True, # should prioritized replay be used
-    "EPSILON_DECAY" : 0.005, # how much to decay epsilon each iteration
-    "INNER_ITS" : 10, # how many training steps per iteration
-    "SAMPLES_FROM_ENV" : 5000, # how many new samples from the environment should be added to the buffer each iteration (in expectation)
+    "EPSILON_DECAY" : 0.003, # how much to decay epsilon each iteration
+    "INNER_ITS" : 50, # how many training steps per iteration
+    "SAMPLES_FROM_ENV" : 3000, # how many new samples from the environment should be added to the buffer each iteration (in expectation)
     "TRAIN_ITS" : 12000, # how many training iterations should be done
     "INITIAL_EPSILON" : 1, # initial value of epsilon
     "EPSILON_MIN" : 0.1, # minimum value of epsilon that can be reached
     "BATCH_SIZE" : 512, # batch size
-    "POLYAK_UPDATE" : 0.0017, # polyak update for each training step (so INNER_ITS polyak updates per training iteration)
-    "LEARNING_RATE" : 0.0025, # learning rate for the adam
+    "POLYAK_UPDATE" : 0.0102, # polyak update for each iteration
+    "LEARNING_RATE" : 0.00025, # learning rate for the adam
     "ENV" : "ALE/Asterix-v5", # environment name
-    "LOG_PATH_WEIGHTS" : 'asterix_test/run39/', # where to store the weights
-    "LOG_PATH_TENSORBOARD" : 'logs/asterix_test/run39/', # where to store dqn loss and reward for tensorboard
+    "LOG_PATH_WEIGHTS" : 'asterix_test/run8/', # where to store the weights
+    "LOG_PATH_TENSORBOARD" : 'logs/asterix_test/run8/', # where to store dqn loss and reward for tensorboard
     "PRELOAD_WEIGHTS" : None # path to preloaded weights
     }
 
-    # send hyperparameters to the buffer
-    soc = socket.socket()
-    connected = False
-    while not connected:
-        try: 
-            soc.connect(('localhost',7998))
-            connected = True
-        except:
-            time.sleep(5)
-            print("Could not connect to 'localhost' with port 7998. Will retry in 5 seconds. Make sure to run buffer_server.py ")
-    with soc:
-        soc.sendall(pickle.dumps(params))
+    #with open("buffer.pkl" , "rb") as f:
+    #    buffer = joblib.load(f)
     
+
     # fill the buffer
+    buffer = Buffer(params["BUFFER_SIZE"], params["BUFFER_MIN"], params["BUFFER_PATH"], params["KEEP_IN_MEM"], params["USE_PRIORITIZED_REPLAY"])
     
     model = AgentModel(9)
-    model(tf.random.uniform(shape=(1,84,84,12)))
+    model(tf.random.uniform(shape=(1,84,84,4)))
     if params["PRELOAD_WEIGHTS"]:
         model.load_weights(params["PRELOAD_WEIGHTS"] + "model")
-    model(tf.random.uniform(shape=(1,84,84,12)))
+    model(tf.random.uniform(shape=(1,84,84,4)))
     total = 0
     while total < params["BUFFER_MIN"]:
-        print(total)
-        data = create_trajectory(model,100, params["INITIAL_EPSILON"], params["ENV"], 4,84,84)
-
+        print("total: ",total)
+    
+        data = create_trajectory(model,10, params["INITIAL_EPSILON"], params["ENV"], 4,84,84)
+        print(len(data))
         total += len(data)
-        soc = socket.socket()
-        connected = False
-        while not connected:
-            try: 
-                soc.connect(('localhost',7999))
-                connected = True
-            except:
-                time.sleep(5)
-                print("Could not connect to 'localhost' with port 7999. Will retry in 5 seconds ")
-        with soc:
-            soc.sendall(pickle.dumps({"task" : "extend" , "values" : data}))
+        buffer.extend(data)
+        print("size of buffer in gb: ", asizeof.asizeof(buffer)/1000000000)
+    
+    with open("buffer.pkl" , "wb") as f:
+        joblib.dump(buffer,f)
+
 
     DQN_agent = dqn.agent(
+    buffer = buffer,
     use_prioritized_replay = params["USE_PRIORITIZED_REPLAY"],
     env = params["ENV"], 
     epsilon = params["INITIAL_EPSILON"], 
