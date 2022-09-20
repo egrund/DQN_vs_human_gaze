@@ -4,7 +4,7 @@ from sklearn.metrics import roc_auc_score
 import tensorflow as tf
 import numpy as np
 from scipy import ndimage as ndi 
-from scipy.stats import ttest_ind
+from statsmodels.stats.weightstats import ztest 
 
 def heatmap_comparison_using_AUC(gaze, saliency):
     """ binary classifier: Area Under ROC Curve 
@@ -120,10 +120,10 @@ def heatmap_correlation(gaze_map,saliency_map):
     cor_heatmap = tf.divide(tf.multiply(saliency_map,gaze_map),  tf.sqrt(tf.reduce_sum( tf.add(tf.square(saliency_map), tf.square(gaze_map)) ) ) )
     return cor_heatmap
 
-def t_test(x,y,alternative='both-sided'):
+def z_test(x,y,alternative='both-sided'):
     """ source: https://stackoverflow.com/questions/61379874/how-to-perform-two-sample-one-tailed-t-test-in-python """
 
-    _, double_p = ttest_ind(x,y,equal_var = False)
+    _, double_p = ztest(x, y, value=0) # value = differenz between the two under H0
     if alternative == 'both-sided':
         pval = double_p
     elif alternative == 'greater':

@@ -18,8 +18,8 @@ MODE = 0
 data_modes = ["fixation","heatmap"]
 MODE_DATA = 0
 # choose from which episode to use the data
-episodes = ["160_RZ_9166697_Feb-20-16-46-45","167_JAW_2356024_Mar-29-15-42-54"]
-EPISODE = 0
+episodes = ["160_RZ_9166697_Feb-20-16-46-45","167_JAW_2356024_Mar-29-15-42-54","163_RZ_9932825_Mar-01-13-35-12","315_RZ_216627_Jun-10-20-31-25","171_JAW_3395791_Apr-10-16-30-45","243_RZ_593078_Feb-19-10-19-29"]
+E = 4
 # choose which sample to use
 START = 0
 LAST = 100 # have 2000
@@ -35,12 +35,12 @@ print()
 
 rand.seed(42)
 
-data = Reader(file_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[EPISODE] +".txt", images_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[EPISODE] +"/")
+data = Reader(file_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[E] +".txt", images_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[E] +"/")
 
 functions = [compare.heatmap_comparison_percentage_saliency_also_true,compare.heatmap_comparison_percentage_same,compare.heatmap_comparison_using_AUC,compare.saliency_information_gain,compare.calc_correlation]
 data_loaders = [data.create_gaze_map, data.create_gaze_heatmap]
 
-saliencies = pert.load_saliency(START,LAST,"D:/Documents/Gaze_Data_Project/saliency_database/" + episodes[EPISODE] +"/best/",STEP)
+saliencies = pert.load_saliency(START,LAST,"D:/Documents/Gaze_Data_Project/saliency_database/" + episodes[E] +"/best/",STEP)
 gaze_lists = [data.get_gaze(i,FRAME_SKIPS) for i in range(START,LAST+1,STEP)]
 data_maps = [ data_loaders[MODE_DATA](i,FRAME_SKIPS) for i in range(START,LAST+1,STEP)]
 
