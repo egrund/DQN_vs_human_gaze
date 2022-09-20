@@ -124,6 +124,7 @@ def z_test(x,y,alternative='both-sided'):
     """ source: https://stackoverflow.com/questions/61379874/how-to-perform-two-sample-one-tailed-t-test-in-python """
 
     _, double_p = ztest(x, y, value=0) # value = differenz between the two under H0
+    pval = -1
     if alternative == 'both-sided':
         pval = double_p
     elif alternative == 'greater':

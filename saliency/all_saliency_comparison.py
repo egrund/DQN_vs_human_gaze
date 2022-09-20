@@ -9,14 +9,14 @@ import scipy.stats as stats
 
 # choose with what method to compare:
 modes = ["TP","same","AUC","IG","CC"] 
-MODE = 2
+MODE = 0
 # choose what data from the human to use
 # AUC + fixation = AUC-Judd
 # IG -> fixation
 # CC -> heatmap
 # rest choose
 data_modes = ["fixation","heatmap"]
-MODE_DATA = 1
+MODE_DATA = 0
 # choose from which episode to use the data
 episodes = ["160_RZ_9166697_Feb-20-16-46-45","167_JAW_2356024_Mar-29-15-42-54","163_RZ_9932825_Mar-01-13-35-12","315_RZ_216627_Jun-10-20-31-25","171_JAW_3395791_Apr-10-16-30-45","243_RZ_593078_Feb-19-10-19-29"]
 EPISODE = 0
@@ -110,34 +110,34 @@ for e in range(EPISODE,E_END):
 
     print(episodes[e]," RANDOM Mean: ", np.mean(list_valuesr2))
     print(episodes[e]," RANDOM Variance: ",np.var(list_valuesr2,ddof=1))
-    values.r2.extend(list_valuesr2)
+    valuesr2.extend(list_valuesr2)
 
 mean = np.mean(values)
 meanr1 = np.mean(valuesr1)
 meanr2 = np.mean(valuesr2)
 print("Mean: ", mean)
 print("Variance: ",np.var(values,ddof=1))
-print("Confidence interval: ",stats.norm.interval(alpha=0.95, loc=mean,scale=stats.sem(values)))
+print("Confidence interval: ",stats.norm.interval(confidence=0.95, loc=mean,scale=stats.sem(values)))
 print("Randomly assigned saliency")
 print("RANDOM Mean: ", meanr1)
 print("RANDOM Variance: ",np.var(valuesr1,ddof=1))
-print("Confidence interval: ",stats.norm.interval(alpha=0.95, loc=meanr1,scale=stats.sem(valuesr1)))
+print("Confidence interval: ",stats.norm.interval(confidence=0.95, loc=meanr1,scale=stats.sem(valuesr1)))
 print("Randomly assigned gaze heatmap")
 print("RANDOM Mean: ", meanr2)
 print("RANDOM Variance: ",np.var(valuesr2,ddof=1))
-print("Confidence interval: ",stats.norm.interval(alpha=0.95, loc=meanr2,scale=stats.sem(valuesr2)))
+print("Confidence interval: ",stats.norm.interval(confidence=0.95, loc=meanr2,scale=stats.sem(valuesr2)))
 
 
 # statistical p calculation
-print("t-test Analysis")
-print("dif r1: ", compare.z_test(a=values, b=valuesr1) )
-print("dif r2: ", compare.z_test(a=values, b=valuesr2) )
+print("z-test Analysis")
+print("dif r1: ", compare.z_test(values, valuesr1) )
+print("dif r2: ", compare.z_test(values, valuesr2) )
 
 print("greater r1: ", compare.z_test(values,valuesr1,"greater") )
 print("greater r2: ", compare.z_test(values,valuesr2,"greater") )
 
-print("smaller r1: ", compare.z_test(values,valuesr1,"smaller") )
-print("smaller r2: ", compare.z_test(values,valuesr2,"smaller") )
+print("smaller r1: ", compare.z_test(values,valuesr1,"less") )
+print("smaller r2: ", compare.z_test(values,valuesr2,"less") )
 
 end = time.time()
 print("Time needed: ",end - start)
