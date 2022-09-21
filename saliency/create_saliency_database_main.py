@@ -8,18 +8,17 @@ import time
 from imageio.v2 import imwrite
 
 episodes = ["160_RZ_9166697_Feb-20-16-46-45","167_JAW_2356024_Mar-29-15-42-54","163_RZ_9932825_Mar-01-13-35-12","315_RZ_216627_Jun-10-20-31-25","171_JAW_3395791_Apr-10-16-30-45","243_RZ_593078_Feb-19-10-19-29"]
-E = 4
-E_ENDE = 5
+E = 5
+E_ENDE = 6
 
 data = Reader(file_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[E] +".txt", images_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[E] + "/") 
-#data = Reader(file_dir = "/media/egrund/Storage/Documents/Gaze_Data_Project/asterix/160_RZ_9166697_Feb-20-16-46-45.txt", images_dir = "/media/egrund/Storage/Documents/Gaze_Data_Project/asterix/160_RZ_9166697_Feb-20-16-46-45_extracted/")
 
 FRAME_SKIPS = 4
 #I_MAX = data.get_number_frames()
 MODE = 'image' #'blurred' # 'black', 'white', 'random'
 SIGMA = 2.8 # size of perturbation
-FRAMES_START = 2788
-FRAMES_END = 4001
+FRAMES_START = 0
+FRAMES_END = 2788
 STEP = 4
 
 model = AgentModel(9)

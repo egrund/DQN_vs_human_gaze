@@ -8,8 +8,8 @@ import numpy as np
 import scipy.stats as stats 
 
 # choose with what method to compare:
-modes = ["TP","same","AUC","IG","CC"] 
-MODE = 0
+modes = ["TP","TPTN","AUC","IG","CC"] 
+MODE = 1
 # choose what data from the human to use
 # AUC + fixation = AUC-Judd
 # IG -> fixation
@@ -30,19 +30,21 @@ STEP = 4
 FRAME_SKIPS = 4 # How many frames of gaze data to compare to the saliency map
 
 print()
-print("Test ",modes[MODE])
+print("Test ",modes[MODE]," using ", data_modes[MODE_DATA])
 print("------------------")
 print()
 
 start = time.time()
 
 rand.seed(42)
+np.random.seed(42)
 functions = [compare.heatmap_comparison_percentage_saliency_also_true,compare.heatmap_comparison_percentage_same,compare.heatmap_comparison_using_AUC,compare.saliency_information_gain,compare.calc_correlation]
 
 values = []
 valuesr1 = []
 valuesr2 = []
 for e in range(EPISODE,E_END):
+    print(episodes[e])
     data = Reader(file_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[e ] +".txt", images_dir = "D:/Documents/Gaze_Data_Project/asterix/" + episodes[e ] +"/")
     data_loaders = [data.create_gaze_map, data.create_gaze_heatmap]
 
@@ -67,8 +69,8 @@ for e in range(EPISODE,E_END):
         list_values.append(value)
         #print(i,modes[MODE],value)
 
-    print(episodes[e]," Mean: ", np.mean(list_values))
-    print(episodes[e]," Variance: ",np.var(list_values,ddof=1))
+    print("Mean: ", np.mean(list_values))
+    print("Variance: ",np.var(list_values,ddof=1))
     values.extend(list_values)
 
     # compare random matches
@@ -86,11 +88,11 @@ for e in range(EPISODE,E_END):
         list_valuesr1.append(value)
         #print(i,modes[MODE]," RANDOM ",value)
 
-    print(episodes[e]," RANDOM Mean: ", np.mean(list_valuesr1))
-    print(episodes[e]," RANDOM Variance: ",np.var(list_valuesr1,ddof=1))
+    print("RA Mean: ", np.mean(list_valuesr1))
+    print("RA Variance: ",np.var(list_valuesr1,ddof=1))
     valuesr1.extend(list_valuesr1)
 
-    print("Randomly assigned gaze heatmap") # difficult with AUC
+    print("Same saliency but shuffled")
 
     list_valuesr2 = []
     for i in range(START,LAST+1,STEP):
@@ -99,45 +101,53 @@ for e in range(EPISODE,E_END):
             continue
         heatmap = data_maps[ix]
 
-        image_index = rand.randrange(START,LAST+1,STEP)
-        while not gaze_lists[ix] or i == image_index:
-            image_index = rand.randrange(START,LAST+1,STEP)
-
-        saliency = heatmaps[int(image_index/STEP)]
+        saliency = saliencies[ix]
+        #[np.random.shuffle(sal) for sal in saliency]
+        sal_flat = saliency.flatten()
+        np.random.shuffle(sal_flat)
+        saliency = sal_flat.reshape(saliency.shape)
         value = functions[MODE](heatmap, saliency)
         list_valuesr2.append(value)
         #print(i,modes[MODE]," RANDOM ",value)
 
-    print(episodes[e]," RANDOM Mean: ", np.mean(list_valuesr2))
-    print(episodes[e]," RANDOM Variance: ",np.var(list_valuesr2,ddof=1))
+    print("Shuffled Mean: ", np.mean(list_valuesr2))
+    print("Shuffled Variance: ",np.var(list_valuesr2,ddof=1))
     valuesr2.extend(list_valuesr2)
 
+print()
+print("All Episodes")
 mean = np.mean(values)
 meanr1 = np.mean(valuesr1)
 meanr2 = np.mean(valuesr2)
+confidence = stats.norm.interval(confidence=0.95, loc=mean,scale=stats.sem(values))
+confidencer1 = stats.norm.interval(confidence=0.95, loc=meanr1,scale=stats.sem(valuesr1))
+confidencer2 = stats.norm.interval(confidence=0.95, loc=meanr2,scale=stats.sem(valuesr2))
 print("Mean: ", mean)
 print("Variance: ",np.var(values,ddof=1))
-print("Confidence interval: ",stats.norm.interval(confidence=0.95, loc=mean,scale=stats.sem(values)))
+print("Confidence interval: ",confidence)
+print("+/-", mean - confidence[0])
 print("Randomly assigned saliency")
-print("RANDOM Mean: ", meanr1)
-print("RANDOM Variance: ",np.var(valuesr1,ddof=1))
-print("Confidence interval: ",stats.norm.interval(confidence=0.95, loc=meanr1,scale=stats.sem(valuesr1)))
-print("Randomly assigned gaze heatmap")
-print("RANDOM Mean: ", meanr2)
-print("RANDOM Variance: ",np.var(valuesr2,ddof=1))
-print("Confidence interval: ",stats.norm.interval(confidence=0.95, loc=meanr2,scale=stats.sem(valuesr2)))
+print("RA Mean: ", meanr1)
+print("RA Variance: ",np.var(valuesr1,ddof=1))
+print("Confidence interval: ", confidencer1)
+print("+/-", meanr1 - confidencer1[0])
+print("Same saliency but shuffled")
+print("Shuffled Mean: ", meanr2)
+print("Shuffled Variance: ",np.var(valuesr2,ddof=1))
+print("Confidence interval: ",confidencer2)
+print("+/-", meanr2 - confidencer2[0])
 
 
 # statistical p calculation
 print("z-test Analysis")
-print("dif r1: ", compare.z_test(values, valuesr1) )
-print("dif r2: ", compare.z_test(values, valuesr2) )
+print("dif to Ra: ", compare.z_test(values, valuesr1) )
+print("dif Shuffled: ", compare.z_test(values, valuesr2) )
 
-print("greater r1: ", compare.z_test(values,valuesr1,"greater") )
-print("greater r2: ", compare.z_test(values,valuesr2,"greater") )
+print("greater Ra: ", compare.z_test(values,valuesr1,"greater") )
+print("greater Shuffled: ", compare.z_test(values,valuesr2,"greater") )
 
-print("smaller r1: ", compare.z_test(values,valuesr1,"less") )
-print("smaller r2: ", compare.z_test(values,valuesr2,"less") )
+print("smaller Ra: ", compare.z_test(values,valuesr1,"less") )
+print("smaller Shuffled: ", compare.z_test(values,valuesr2,"less") )
 
 end = time.time()
 print("Time needed: ",end - start)
