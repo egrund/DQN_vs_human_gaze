@@ -13,14 +13,14 @@ start = time.time()
 
 # choose with what method to compare:
 modes = ["TP","TPTN","AUC","IG","CC"] 
-MODE = "All" # changed file to do all otherwise change for loop
+MODE = # changed file to do all in for loop otherwise change for loop
 # choose what data from the human to use
 # AUC + fixation = AUC-Judd
 # IG -> fixation
 # CC -> heatmap
 # rest choose
 data_modes = ["fixation","heatmap"]
-MODE_DATA = 0
+MODE_DATA = 0 # all in for loop now
 # choose from which episode to use the data
 episodes = ["160_RZ_9166697_Feb-20-16-46-45","167_JAW_2356024_Mar-29-15-42-54","163_RZ_9932825_Mar-01-13-35-12","315_RZ_216627_Jun-10-20-31-25","171_JAW_3395791_Apr-10-16-30-45","243_RZ_593078_Feb-19-10-19-29"]
 EPISODE = 0
@@ -42,7 +42,7 @@ for m,mode in enumerate(modes):
             continue
 
         print()
-        print("Test ",mode," using ", data_modes[MODE_DATA])
+        print("Test ",mode," using ", mode_data)
         print("------------------")
         print()
 
@@ -60,7 +60,7 @@ for m,mode in enumerate(modes):
 
             saliencies = pert.load_saliency(START,LAST,"D:/Documents/Gaze_Data_Project/saliency_database/" + episodes[e ] +"/best/",STEP)
             gaze_lists = [data.get_gaze(i,FRAME_SKIPS) for i in range(START,LAST+1,STEP)]
-            data_maps = [ data_loaders[MODE_DATA](i,FRAME_SKIPS) for i in range(START,LAST+1,STEP)]
+            data_maps = [ data_loaders[md](i,FRAME_SKIPS) for i in range(START,LAST+1,STEP)]
 
             # save the shuffled saliency to see them (one time execution is enough, see database)
             #for i in range(START,LAST+1,STEP):
@@ -77,7 +77,7 @@ for m,mode in enumerate(modes):
 
             # heatmaps for part 3 with comparing to random heatmap
             heatmaps = data_maps
-            if(data_modes[MODE_DATA] != "heatmap"):
+            if(mode_data != "heatmap"):
                 heatmaps = [data.create_gaze_heatmap(i,FRAME_SKIPS) for i in range(START,LAST+1,STEP)]
 
             list_values = []
@@ -138,7 +138,7 @@ for m,mode in enumerate(modes):
             valuesr2.extend(list_valuesr2)
 
         # put in dataframe
-        print_mode = mode + data_modes[MODE_DATA]
+        print_mode = mode + mode_data
         df[print_mode] = values
         df[print_mode + " RA"] = valuesr1
         df[print_mode + " Shuffled"] = valuesr2
