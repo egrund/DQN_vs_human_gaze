@@ -6,10 +6,11 @@ import random as rand
 import time
 import numpy as np
 import scipy.stats as stats 
+from imageio.v2 import imwrite
 
 # choose with what method to compare:
 modes = ["TP","TPTN","AUC","IG","CC"] 
-MODE = 1
+MODE = 0
 # choose what data from the human to use
 # AUC + fixation = AUC-Judd
 # IG -> fixation
@@ -51,6 +52,19 @@ for e in range(EPISODE,E_END):
     saliencies = pert.load_saliency(START,LAST,"D:/Documents/Gaze_Data_Project/saliency_database/" + episodes[e ] +"/best/",STEP)
     gaze_lists = [data.get_gaze(i,FRAME_SKIPS) for i in range(START,LAST+1,STEP)]
     data_maps = [ data_loaders[MODE_DATA](i,FRAME_SKIPS) for i in range(START,LAST+1,STEP)]
+
+    # save the shuffled saliency to see them (one time execution is enough, see database)
+    #for i in range(START,LAST+1,STEP):
+        #saliency = saliencies[int(i/STEP)]
+        #sal_flat = saliency.flatten()
+        #np.random.shuffle(sal_flat)
+        #saliency = sal_flat.reshape(saliency.shape)
+        #path = "saliency_database/" + episodes[e] +"/shuffled/" + str(i) + "-" + str(i+FRAME_SKIPS-1) + ".png"
+        #saliency_to_save = (saliency * 255)
+        #imwrite(path,saliency_to_save.astype(np.uint8))
+
+    saliencies_shuffled = pert.load_saliency(START,LAST,"D:/Documents/Gaze_Data_Project/saliency_database/" + episodes[e ] +"/shuffled/",STEP)
+    
 
     # heatmaps for part 3 with comparing to random heatmap
     heatmaps = data_maps
@@ -101,11 +115,11 @@ for e in range(EPISODE,E_END):
             continue
         heatmap = data_maps[ix]
 
-        saliency = saliencies[ix]
-        #[np.random.shuffle(sal) for sal in saliency]
-        sal_flat = saliency.flatten()
-        np.random.shuffle(sal_flat)
-        saliency = sal_flat.reshape(saliency.shape)
+        #saliency = saliencies[ix]
+        #sal_flat = saliency.flatten()
+        #np.random.shuffle(sal_flat)
+        #saliency = sal_flat.reshape(saliency.shape)
+        saliency = saliencies_shuffled[ix]
         value = functions[MODE](heatmap, saliency)
         list_valuesr2.append(value)
         #print(i,modes[MODE]," RANDOM ",value)
