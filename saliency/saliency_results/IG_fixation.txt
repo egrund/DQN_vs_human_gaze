@@ -1,0 +1,81 @@
+Test  IG  using  fixation
+------------------
+
+160_RZ_9166697_Feb-20-16-46-45
+Mean:  0.00083081296
+Variance:  7.6235136e-07
+Randomly assigned saliency
+RA Mean:  0.000670502
+RA Variance:  6.032181e-07
+Same saliency but shuffled
+Shuffled Mean:  0.00040368256
+Shuffled Variance:  1.43613e-07
+167_JAW_2356024_Mar-29-15-42-54
+Mean:  0.00070143474
+Variance:  1.0514541e-06
+Randomly assigned saliency
+RA Mean:  0.00055201305
+RA Variance:  6.907383e-07
+Same saliency but shuffled
+Shuffled Mean:  0.00027380884
+Shuffled Variance:  1.5601937e-07
+163_RZ_9932825_Mar-01-13-35-12
+Mean:  0.0009242752
+Variance:  8.6974495e-07
+Randomly assigned saliency
+RA Mean:  0.00078536
+RA Variance:  7.5834197e-07
+Same saliency but shuffled
+Shuffled Mean:  0.00044078744
+Shuffled Variance:  1.5268894e-07
+315_RZ_216627_Jun-10-20-31-25
+Mean:  0.000824364
+Variance:  7.6948197e-07
+Randomly assigned saliency
+RA Mean:  0.00067499763
+RA Variance:  6.647304e-07
+Same saliency but shuffled
+Shuffled Mean:  0.0003301806
+Shuffled Variance:  1.0824346e-07
+171_JAW_3395791_Apr-10-16-30-45
+Mean:  0.000743816
+Variance:  7.1607843e-07
+Randomly assigned saliency
+RA Mean:  0.00060635514
+RA Variance:  6.00472e-07
+Same saliency but shuffled
+Shuffled Mean:  0.0003147333
+Shuffled Variance:  1.2555196e-07
+243_RZ_593078_Feb-19-10-19-29
+Mean:  0.0012817299
+Variance:  1.7318898e-06
+Randomly assigned saliency
+RA Mean:  0.0010981512
+RA Variance:  1.3953262e-06
+Same saliency but shuffled
+Shuffled Mean:  0.0005812174
+Shuffled Variance:  2.5942336e-07
+
+All Episodes
+Mean:  0.0008843385
+Variance:  1.0192491e-06
+Confidence interval:  (0.0008587718040627194, 0.0009099052256959724)
++/- 2.5566710816626458e-05
+Randomly assigned saliency
+RA Mean:  0.0007311717
+RA Variance:  8.168048e-07
+Confidence interval:  (0.0007082844299090596, 0.0007540589518087415)
++/- 2.2887260949840918e-05
+Same saliency but shuffled
+Shuffled Mean:  0.0003907375
+Shuffled Variance:  1.6783548e-07
+Confidence interval:  (0.00038036276806692183, 0.0004011122161840409)
++/- 1.0374724058559534e-05
+z-test Analysis
+dif to Ra:  2.1613746010434077e-18
+dif Shuffled:  2.4741446131729846e-269
+greater Ra:  1.0806873005217038e-18
+greater Shuffled:  1.2370723065864923e-269
+smaller Ra:  1.0
+smaller Shuffled:  1.0
+Time needed:  95.46663522720337

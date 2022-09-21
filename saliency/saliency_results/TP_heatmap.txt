@@ -1,0 +1,81 @@
+Test  TP  using  heatmap
+------------------
+
+160_RZ_9166697_Feb-20-16-46-45
+Mean:  0.33194452038463435
+Variance:  0.06732620168357131
+Randomly assigned saliency
+RA Mean:  0.23245535669198786
+RA Variance:  0.0554859762236627
+Same saliency but shuffled
+Shuffled Mean:  0.115281233911223
+Shuffled Variance:  0.0018104690537213012
+167_JAW_2356024_Mar-29-15-42-54
+Mean:  0.4060358454722127
+Variance:  0.07972935627792749
+Randomly assigned saliency
+RA Mean:  0.28459886535179385
+RA Variance:  0.06861599824630675
+Same saliency but shuffled
+Shuffled Mean:  0.12132248329266601
+Shuffled Variance:  0.0019499887231112555
+163_RZ_9932825_Mar-01-13-35-12
+Mean:  0.3567143342327978
+Variance:  0.06592852232548281
+Randomly assigned saliency
+RA Mean:  0.2892962250734762
+RA Variance:  0.06444424947369425
+Same saliency but shuffled
+Shuffled Mean:  0.12632676507901713
+Shuffled Variance:  0.0020143011197160617
+315_RZ_216627_Jun-10-20-31-25
+Mean:  0.40733363194957556
+Variance:  0.09044058246212326
+Randomly assigned saliency
+RA Mean:  0.30340476745339734
+RA Variance:  0.07366951882787978
+Same saliency but shuffled
+Shuffled Mean:  0.12223601141631317
+Shuffled Variance:  0.00190396436030365
+171_JAW_3395791_Apr-10-16-30-45
+Mean:  0.372329208451261
+Variance:  0.07844330616131806
+Randomly assigned saliency
+RA Mean:  0.26333961736824696
+RA Variance:  0.06677265318105932
+Same saliency but shuffled
+Shuffled Mean:  0.11593967525523394
+Shuffled Variance:  0.0016468865874445444
+243_RZ_593078_Feb-19-10-19-29
+Mean:  0.36266578687750456
+Variance:  0.07311299299573742
+Randomly assigned saliency
+RA Mean:  0.29165029275736254
+RA Variance:  0.05927258749716306
+Same saliency but shuffled
+Shuffled Mean:  0.12385523385890827
+Shuffled Variance:  0.001595476352374268
+
+All Episodes
+Mean:  0.3728012873834225
+Variance:  0.07647085797362857
+Confidence interval:  (0.36579831100821886, 0.37980426375862614)
++/- 0.00700297637520364
+Randomly assigned saliency
+RA Mean:  0.2774232838450416
+RA Variance:  0.065196000007962
+Confidence interval:  (0.2709571430708539, 0.28388942461922934)
++/- 0.006466140774187723
+Same saliency but shuffled
+Shuffled Mean:  0.12082411731146198
+Shuffled Variance:  0.0018346681609493778
+Confidence interval:  (0.11973940781603472, 0.12190882680688923)
++/- 0.001084709495427258
+z-test Analysis
+dif to Ra:  1.2152521775426081e-85
+dif Shuffled:  0.0
+greater Ra:  6.076260887713041e-86
+greater Shuffled:  0.0
+smaller Ra:  1.0
+smaller Shuffled:  1.0
+Time needed:  64.64074611663818
