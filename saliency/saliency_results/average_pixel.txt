@@ -1,0 +1,105 @@
+160_RZ_9166697_Feb-20-16-46-45
+Test Pixel Binary
+------------------
+Saliency average pixels that are one:  0.11749821606964463
+Gaze maps average pixels that are one:  0.0008248596641453785
+Gaze Heatmaps average pixels that are one:  0.026508104990247847
+
+Test Pixel Continuous Average Value
+-----------------------------------
+
+Saliency average pixel value:  0.06860432
+Saliency average amount of zero pixels:  33394.846153846156
+Gaze Heatmaps average pixel value:  0.016186545
+Gaze Heatmaps average amount of zero pixels:  33486.142857142855
+
+167_JAW_2356024_Mar-29-15-42-54
+
+Test Pixel Binary
+------------------
+Saliency average pixels that are one:  0.12408835212406642
+Gaze maps average pixels that are one:  0.0005622948480091337
+Gaze Heatmaps average pixels that are one:  0.022421536796536797
+
+Test Pixel Continuous Average Value
+-----------------------------------
+
+Saliency average pixel value:  0.07104972
+Saliency average amount of zero pixels:  33396.07592407592
+Gaze Heatmaps average pixel value:  0.013698132
+Gaze Heatmaps average amount of zero pixels:  33505.004995004994
+
+163_RZ_9932825_Mar-01-13-35-12
+Test Pixel Binary
+------------------
+Saliency average pixels that are one:  0.12869291422862852
+Gaze maps average pixels that are one:  0.0008710039960039959
+Gaze Heatmaps average pixels that are one:  0.027381755149612292
+
+Test Pixel Continuous Average Value
+-----------------------------------
+
+Saliency average pixel value:  0.07312653
+Saliency average amount of zero pixels:  33395.055944055945
+Gaze Heatmaps average pixel value:  0.016766904
+Gaze Heatmaps average amount of zero pixels:  33486.15284715284
+
+315_RZ_216627_Jun-10-20-31-25
+Test Pixel Binary
+------------------
+Saliency average pixels that are one:  0.12442557442557443
+Gaze maps average pixels that are one:  0.0006652870938585225
+Gaze Heatmaps average pixels that are one:  0.023734955520669804
+
+Test Pixel Continuous Average Value
+-----------------------------------
+
+Saliency average pixel value:  0.07129399
+Saliency average amount of zero pixels:  33395.75224775225
+Gaze Heatmaps average pixel value:  0.014502556
+Gaze Heatmaps average amount of zero pixels:  33497.654345654344
+
+171_JAW_3395791_Apr-10-16-30-45
+Test Pixel Binary
+------------------
+Saliency average pixels that are one:  0.11778816421673564
+Gaze maps average pixels that are one:  0.0006576459255030684
+Gaze Heatmaps average pixels that are one:  0.02259297250368679
+
+Test Pixel Continuous Average Value
+-----------------------------------
+
+Saliency average pixel value:  0.0681973
+Saliency average amount of zero pixels:  33396.12587412587
+Gaze Heatmaps average pixel value:  0.013741605
+Gaze Heatmaps average amount of zero pixels:  33506.96003996004
+
+243_RZ_593078_Feb-19-10-19-29
+Test Pixel Binary
+------------------
+Saliency average pixels that are one:  0.12607856429285
+Gaze maps average pixels that are one:  0.0011539650825365111
+Gaze Heatmaps average pixels that are one:  0.028446821036106754
+
+Test Pixel Continuous Average Value
+-----------------------------------
+
+Saliency average pixel value:  0.07222635
+Saliency average amount of zero pixels:  33395.057942057945
+Gaze Heatmaps average pixel value:  0.01718132
+Gaze Heatmaps average amount of zero pixels:  33485.16083916084
+
+Total: 
+Test Pixel Binary
+------------------
+Saliency average pixels that are one: 0.12309529755958327
+Gaze maps average pixels that are one:  
+Gaze Heatmaps average pixels that are one: 0.025181024332810043
+
+Test Pixel Continuous Average Value
+-----------------------------------
+
+Saliency average pixel value: 0.07074970166666666
+Saliency average amount of zero pixels: 
+Gaze Heatmaps average pixel value: 0.015346177
+Gaze Heatmaps average amount of zero pixels:  

@@ -9,17 +9,17 @@ import tensorflow as tf
 
 # choose with what method to compare:
 modes = ["TP","same","AUC","IG","CC"] 
-MODE = 0
+MODE = 4
 # choose what data from the human to use
 # AUC + fixation = AUC-Judd
 # IG -> fixation
 # CC -> heatmap
 # rest choose
 data_modes = ["fixation","heatmap"]
-MODE_DATA = 0
+MODE_DATA = 1
 # choose from which episode to use the data
 episodes = ["160_RZ_9166697_Feb-20-16-46-45","167_JAW_2356024_Mar-29-15-42-54","163_RZ_9932825_Mar-01-13-35-12","315_RZ_216627_Jun-10-20-31-25","171_JAW_3395791_Apr-10-16-30-45","243_RZ_593078_Feb-19-10-19-29"]
-E = 4
+E = 5
 # choose which sample to use
 START = 0
 LAST = 100 # have 2000
@@ -75,31 +75,39 @@ if(modes[MODE] == "CC"):
 
     cc_heatmap_max = compare.heatmap_correlation(heatmaps[argmax],saliencies[argmax])
     cc_heatmap_min = compare.heatmap_correlation(heatmaps[argmin],saliencies[argmin])
+    image_max = data.get_image(argmax * STEP +3)
+    image_min = data.get_image(argmin * STEP + 3)
 
     fig, axs = plt.subplots(nrows=2, ncols=3, squeeze=False, figsize=(8, 8))
 
     axs[0,0].set_title('SARFA')
     axs[0,0].imshow(saliencies[argmax], cmap="jet")
+    axs[0,0].imshow(image_max,alpha=0.8)
     axs[0,0].axis('off')  
 
     axs[0,1].set_title('Gaze Heatmap')
     axs[0,1].imshow(heatmaps[argmax], cmap="jet")
+    axs[0,1].imshow(image_max,alpha=0.8)
     axs[0,1].axis('off')
 
     axs[0,2].set_title("Max Correlation")
     axs[0,2].imshow(cc_heatmap_max,cmap="jet")
+    axs[0,2].imshow(image_max,alpha=0.8)
     axs[0,2].axis('off')
 
     axs[1,0].set_title('SARFA')
     axs[1,0].imshow(saliencies[argmin], cmap="jet")
+    axs[1,0].imshow(image_min,alpha=0.8)
     axs[1,0].axis('off')  
 
     axs[1,1].set_title('Gaze Heatmap')
     axs[1,1].imshow(heatmaps[argmin], cmap="jet")
+    axs[1,1].imshow(image_min,alpha=0.8)
     axs[1,1].axis('off')
 
     axs[1,2].set_title("Min Correlation")
     axs[1,2].imshow(cc_heatmap_min,cmap="jet")
+    axs[1,2].imshow(image_min,alpha=0.8)
     axs[1,2].axis('off')
 
     plt.tight_layout()
