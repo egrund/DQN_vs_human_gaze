@@ -14,7 +14,7 @@ Main Files: <br />
 <br />
 
 [saliency_results](saliency_results) :<br />
-In this folder there are textfiles containing the output of [all_saliency_comparison_main.py](all_saliency_comparison_main.py) for different methods as well as the output of [average_pixel_comaprison_main.py](average_pixel_comaprison_main.py) and [comparison_finding_max_min_main.py](comparison_finding_max_min_main.py) using correlation. All averaged values are also in the [all_results.csv](saliency_results/all_results.csv) file and in the file [list_all_result_values.csv](saliency_results/list_all_result_values.csv) are the calculated values for each single data pair. 
+In this folder there are textfiles containing the output of [all_saliency_comparison_main.py](all_saliency_comparison_main.py) for different methods as well as the output of [average_pixel_comaprison_main.py](average_pixel_comaprison_main.py) and [comparison_finding_max_min_main.py](comparison_finding_max_min_main.py) using correlation. All averaged values are also in the [all_results.csv](saliency_results/all_results.csv) file and in the file [list_all_result_values.csv](saliency_results/list_all_result_values.csv) are the calculated values for each single data pair. <br />
 
 <br />
 [Paper_Image_Creation_Code](Paper_Image_Creation_Code) :<br />
