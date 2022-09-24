@@ -13,16 +13,15 @@ Main Files: <br />
 * [comparison_finding_max_min_main.py](comparison_finding_max_min_main.py) this main finds the max and min value of a comparison method and returns the value and index. If the method is correlation is also visualizes both heatmaps that are compared as well as their correlation heatmap.
 <br />
 
-[saliency_results](saliency_results) :<br />
-In this folder there are textfiles containing the output of [all_saliency_comparison_main.py](all_saliency_comparison_main.py) for different methods as well as the output of [average_pixel_comaprison_main.py](average_pixel_comaprison_main.py) and [comparison_finding_max_min_main.py](comparison_finding_max_min_main.py) using correlation. All averaged values are also in the [all_results.csv](saliency_results/all_results.csv) file and in the file [list_all_result_values.csv](saliency_results/list_all_result_values.csv) are the calculated values for each single data pair. <br />
+[saliency_results](saliency_results) :\
+In this folder there are textfiles containing the output of [all_saliency_comparison_main.py](all_saliency_comparison_main.py) for different methods as well as the output of [average_pixel_comaprison_main.py](average_pixel_comaprison_main.py) and [comparison_finding_max_min_main.py](comparison_finding_max_min_main.py) using correlation. All averaged values are also in the [all_results.csv](saliency_results/all_results.csv) file and in the file [list_all_result_values.csv](saliency_results/list_all_result_values.csv) are the calculated values for each single data pair. \
 
-<br />
-[Paper_Image_Creation_Code](Paper_Image_Creation_Code) :<br />
-In this folder are several main files who create visualizations for our report. They need other files to work, but are stuck in this folder, because they where only for creating these visualizations. 
+\
+[Paper_Image_Creation_Code](Paper_Image_Creation_Code) :\
+In this folder are several main files who create visualizations for our report. They need other files to work, but are stuck in this folder, because they where only for creating these visualizations. \
 
-
-<br />
-References: <br />
+\
+References: \
 Puri, N., Verma, S., Gupta, P., Kayastha, D., Deshmukh, S., Krishnamurthy, B.,
     & Singh, S. (2020). Explain your move: Understanding agent actions using
     specific and relevant feature attribution. International Conference on Learning
