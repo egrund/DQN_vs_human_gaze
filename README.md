@@ -8,8 +8,8 @@ We used the Atari-HEAD dataset to compare human attention maps and DQN attion ma
 Our Project is divided into 4 parts: <br />
 
 1. Training a baseline DQN learning to play Asterix (Atari):
-    * The Files for training can be found  [here](asterix). 
-    * We also uploaded the [weights](best) of our final model here.
+    * The Files for training can be found in the folder [asterix](asterix). 
+    * We also uploaded the [weights](best) of our final model.
 
 2. Creating saliency maps for the baseline DQN 
     * The Files for the training are in [saliency](saliency).
