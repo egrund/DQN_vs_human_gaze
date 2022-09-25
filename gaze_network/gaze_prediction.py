@@ -46,10 +46,8 @@ class GazePrediction(Model):
         self.softmax   = Softmax()
 
     def call(self, obs, training=False):
-        input_shape = tf.shape(obs)
-        # if input_shape[-1] != 4:
-        #     obs = tf.transpose(obs, [0, 2, 3, 1]) # make channels last: NCHW doesn't work on the M1 chip
-        # # obs = obs / 0xFF
+        input_shape = tf.shape(obs) # channels last
+        # obs = obs / 0xFF
         output = self.conv1(obs, training=training)
         output = self.norm1(output, training=training)
         output = self.relu1(output, training=training)
@@ -86,5 +84,6 @@ if __name__ == '__main__':
     model = GazePrediction(env)
     obs = tf.cast(env.reset(), tf.float32)
     obs = tf.expand_dims(obs, axis=0) # add batch dim
+    obs = tf.transpose(obs, [0, 2, 3, 1]) # channels last
     model(obs)
     model.summary()
