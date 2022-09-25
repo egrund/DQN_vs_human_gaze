@@ -9,7 +9,7 @@ Our project is divided into four parts:
 
 1. Training a baseline DQN to play Asterix (Atari):
     * Training scripts can be found in the folder [asterix](asterix). 
-    * The [weights](best) of the best-performing model are also included.
+    * The [weights](dqn_weights) of the best-performing model are also included.
 
 2. Creating saliency maps for the baseline DQN 
     * The scripts for creating saliency maps and analysing them are in [saliency](saliency).
