@@ -38,6 +38,7 @@ class AgentModel(Model):
         self._l04 = tf.keras.layers.MaxPooling2D((3, 3))
         self._l05 = tf.keras.layers.Conv2D(64, (3, 3), activation='relu')
         self._l06 = tf.keras.layers.GlobalMaxPooling2D()
+
         self._l07 = tf.keras.layers.Dense(512,activation="relu")
 
         # state value
@@ -54,7 +55,6 @@ class AgentModel(Model):
     def call(self, inputs, training):
         inputs = tf.cast(inputs, tf.float32)
         inputs = (inputs-127.5)/127.5
-        print("inputs: ", inputs.shape)
 
         gaze = self.gaze_network(inputs)
 
@@ -63,15 +63,7 @@ class AgentModel(Model):
         x = self._l3(x,training=training)
         x = self._l4(x,training=training)
         x = self._l5(x,training=training)
-        x = self._l6(x,training=training)
-        x = self._l7(x,training=training)
-
-        state_value = self._l10(x,training=training)
-        advantages = self._l11(x,training=training)
-
-        ch1_output = state_value + advantages - tf.expand_dims(
-                    tf.reduce_sum(advantages,axis = -1)/tf.cast(self._num_actions,tf.float32),
-                    axis = -1)
+        ch1_output = self._l6(x,training=training)
 
         # pass a masked frame through the network
 
@@ -83,17 +75,19 @@ class AgentModel(Model):
         ch2_output = self._l04(ch2_output,training=training)
         ch2_output = self._l05(ch2_output,training=training)
         ch2_output = self._l06(ch2_output,training=training)
-        ch2_output = self._l07(ch2_output,training=training)
-
-        g_state_value = self._l010(ch2_output,training=training)
-        g_advantages = self._l011(ch2_output,training=training)
-
-        ch2_output = g_state_value + g_advantages - tf.expand_dims(
-                    tf.reduce_sum(g_advantages,axis = -1)/tf.cast(self._num_actions,tf.float32),
-                    axis = -1)
 
         # take the average
         out = self.average([ch1_output, ch2_output])
+        out = self._l7(out, training=training)
+
+        # state value
+        state_value = self._l10(out,training=training)
+        advantages = self._l11(out,training=training)
+
+        out = state_value + advantages - tf.expand_dims(
+                    tf.reduce_sum(advantages,axis = -1)/tf.cast(self._num_actions,tf.float32),
+                    axis = -1)
+
         return out
 
 
