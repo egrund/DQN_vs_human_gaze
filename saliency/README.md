@@ -2,7 +2,7 @@ In this section the code is for creating saliency heatmaps and comparing them wi
 To execute the files, you might need additional code from the parent folder and the asterix folder of this repository and data as e.g. the model`s weights or the saliency database we created.
 
 * [integrated_gradients.py](integrated_gradients.py) contains all needed functions to compute the integrated gradients of a model ([Source](https://github.com/GoogleCloudPlatform/training-data-analyst/blob/master/blogs/integrated_gradients/integrated_gradients.ipynb)).
-* [perturbation_for_sarfa.py](perturbation_for_sarfa.py) contains all the functions for perturbing an image and calculating the SARFA-saliency. For the calculation process it uses a function from the file [sarfa_saliency.py](sarfa_saliency.py) which was made publically availble by the original authors (Puri et al. 2020) on the [Github](https://github.com/nikaashpuri/sarfa-saliency) accompanying their Paper. 
+* [perturbation_for_sarfa.py](perturbation_for_sarfa.py) contains all the functions for perturbing an image and calculating the SARFA-saliency. For the calculation process it uses a function from the file [sarfa_saliency.py](sarfa_saliency.py) which was made publically availble by the original authors on the [Github](https://github.com/nikaashpuri/sarfa-saliency) accompanying their Paper [1]. 
 * [heatmap_comparison.py](heatmap_comparison.py) contains the functions for the comparison of the gaze data (e.g. gaze heatmap) and the saliency heatmaps.
 <br />
 Main Files: <br />
@@ -21,8 +21,4 @@ In this folder there are textfiles containing the output of [all_saliency_compar
 In this folder are several main files who create visualizations for our report. They need other files to work, but are stuck in this folder, because they where only for creating these visualizations. 
 
 \
-References: \
-Puri, N., Verma, S., Gupta, P., Kayastha, D., Deshmukh, S., Krishnamurthy, B.,
-    & Singh, S. (2020). Explain your move: Understanding agent actions using
-    specific and relevant feature attribution. International Conference on Learning
-    Representations (ICLR).
+[1] Puri, N., Verma, S., Gupta, P., Kayastha, D., Deshmukh, S., Krishnamurthy, B., & Singh, S. (2020). Explain your move: Understanding agent actions using specific and relevant feature attribution. International Conference on Learning Representations (ICLR).
