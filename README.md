@@ -1,6 +1,8 @@
 # Using human gaze data for training a DQN to play Atari games
 DRL Project SS22
 
+![image](report/clip-asterix.gif)
+
 This is our final project for the course 'Deep Reinforcement Learning' given in SS22 at Osnabrück University.
 
 We used the Atari-HEAD dataset [1] to compare human attention maps and DQN saliency maps, and explore the possibility of adding human attention data to the training process. We have also experimented with making inputs to the DQN more similar to human perceptual input. Further information can be found in the project report.
