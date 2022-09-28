@@ -14,14 +14,14 @@ class Blurrer(Model):
 
         self._mse = tf.keras.losses.MeanSquaredError()
 
-        self._l1 = tf.keras.layers.Conv2D(16, (8, 8), strides = (2,2),activation='relu', input_shape=input_shape)
+        self._l1 = tf.keras.layers.Conv2D(64, (8, 8), strides = (2,2),activation='relu', input_shape=input_shape)
         self._l2 = tf.keras.layers.MaxPooling2D((3, 3))
-        self._l3 = tf.keras.layers.Conv2D(16, (4, 4), activation='relu')
+        self._l3 = tf.keras.layers.Conv2D(64, (4, 4), activation='relu')
         self._l4 = tf.keras.layers.MaxPooling2D((3, 3))
-        self._l5 = tf.keras.layers.Conv2D(16, (3, 3), activation='relu')
+        self._l5 = tf.keras.layers.Conv2D(64, (3, 3), activation='relu')
         self._l6 = tf.keras.layers.GlobalMaxPooling2D()
-        self._l7 = tf.keras.layers.Dense(128,activation="relu")
-        initializer = tf.keras.initializers.Constant(value=0.0018125)
+        self._l7 = tf.keras.layers.Dense(512,activation="relu")
+        initializer = tf.keras.initializers.Constant(value=0.009125)
         self._l10 = tf.keras.layers.Dense(4,activation="linear", bias_initializer='zeros', kernel_initializer = initializer)
         self._l11 = tf.keras.layers.Dense(4,activation="linear", bias_initializer='zeros', kernel_initializer = initializer)
 
