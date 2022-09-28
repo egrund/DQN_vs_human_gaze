@@ -52,7 +52,7 @@ def prepare_data(frames_dir, labels_dir, train_size, batch_size, window_size=4):
 def train_step(model, inputs, targets, loss_fn, optimiser, loss_metric):
     with tf.GradientTape() as tape:
         predictions = model(inputs, training=True)
-        loss = loss_fn(tf.reshape(targets, [-1]), tf.reshape(predictions, [-1]))
+        loss = loss_fn(targets, predictions)
     gradients = tape.gradient(loss, model.trainable_variables)
     optimiser.apply_gradients(zip(gradients, model.trainable_variables))
     logs = {}
@@ -63,7 +63,7 @@ def train_step(model, inputs, targets, loss_fn, optimiser, loss_metric):
 @tf.function
 def test_step(model, inputs, targets, loss_fn, loss_metric):
     predictions = model(inputs, training=False)
-    loss = loss_fn(tf.reshape(targets, [-1]), tf.reshape(predictions, [-1]))
+    loss = loss = loss_fn(targets, predictions)
     logs = {}
     loss_metric.update_state(targets, predictions)
     logs["val_loss"] = loss_metric.result()
