@@ -18,10 +18,11 @@ Our project is divided into four parts:
 
 3. Giving gaze data to the DQN
     * Model files are in the folder [gaze_network](gaze_network).
-    * The weights of the [gaze prediction model](gaze_network/weights) and the weights of the [augmented DQN](dqn_weights) are also uploaded here.
+    * The weights of the [gaze prediction model](gaze_network/weights) and the weights of the [augmented DQN](dqn_weights/gaze_augmented) are also uploaded here.
 
 4. Making the learning more human like by foveating the input and focusing agent's attention on one region at a time.
     * Code can be found in the folder [asterix_with_blurr](asterix_with_blurr):
+    * The weights of the final [foveated model](dqn_weights/blurrer) are made available.
 
 In the root folder, there are the files for reading in and processing the gaze data.
 * [my_reader_class.py](my_reader_class.py) is used to read in the data and save it in an instance of `Reader` to be able to access it easily. The object then also has methods to create fixation maps and gaze heatmaps to compare them with saliency maps.
