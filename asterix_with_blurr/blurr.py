@@ -41,7 +41,7 @@ def to_shape(x,shape):
 
 
 tf.function
-def to_blurred(img, focus_x, focus_y, channels = 4, gauss_kernel = (15,15), radius = 12.0):
+def to_blurred(img, focus_x, focus_y, channels = 4, gauss_kernel = (15,15), radius = 20.0):
     """
     Applies a radial blur to the image around the focus points.
     This function basically creates a weighted average between the same image but blurred in different strengths.
