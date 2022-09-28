@@ -52,7 +52,7 @@ def prepare_data(frames_dir, labels_dir, train_size, batch_size, window_size=4):
 def train_step(model, inputs, targets, loss_fn, optimiser, loss_metric):
     with tf.GradientTape() as tape:
         predictions = model(inputs, training=True)
-        loss = loss_fn(targets, predictions)
+        loss = loss_fn(tf.reshape(targets, [-1]), tf.reshape(predictions, [-1]))
     gradients = tape.gradient(loss, model.trainable_variables)
     optimiser.apply_gradients(zip(gradients, model.trainable_variables))
     logs = {}
@@ -63,7 +63,7 @@ def train_step(model, inputs, targets, loss_fn, optimiser, loss_metric):
 @tf.function
 def test_step(model, inputs, targets, loss_fn, loss_metric):
     predictions = model(inputs, training=False)
-    loss = loss_fn(targets, predictions)
+    loss = loss_fn(tf.reshape(targets, [-1]), tf.reshape(predictions, [-1]))
     logs = {}
     loss_metric.update_state(targets, predictions)
     logs["val_loss"] = loss_metric.result()
@@ -74,24 +74,35 @@ def reset_metrics(metrics):
     for metric in metrics:
         metric.reset_state()
 
-def heatmap_comparison_using_AUC(map1, map2):
-    """ binary classifier: Area Under ROC Curve """
+def heatmap_comparison_using_AUC(map1, map2, threshold=2):
+    """ binary classifier: Area Under ROC Curve
+    Threshold value determines the percentile of salient
+    pixels converted to 1 for a binary map.
+    """
 
     # normalise map: all values between 0 and 1
     map1_max = tf.reduce_max(map1)
     map2_max = tf.reduce_max(map2)
     map1_normal = map1 / map1_max
     map2_normal = map2 / map2_max
-    # create binary maps with only zeros and ones
-    map1_rounded = round_with_threshold(map1_normal)
-    map2_rounded = round_with_threshold(map2_normal)
     # flatten maps
-    map1_flat = tf.reshape(map1_rounded,[-1]).numpy()
-    map2_flat = tf.reshape(map2_rounded,[-1]).numpy()
+    map1_flat = tf.reshape(map1_normal,[-1]).numpy()
+    map2_flat = tf.reshape(map2_normal,[-1]).numpy()
+    # create binary maps with only zeros and ones
+    map1_rounded = round_with_threshold(map1_flat, 2)
+    map2_rounded = round_with_threshold(map2_flat, 2)
 
-    auc_score = roc_auc_score(map1_flat, map2_flat)
+    auc_score = roc_auc_score(map1_rounded, map2_rounded)
 
     return auc_score
 
-def round_with_threshold(array, threshold=0.1, min=0, max=1):
-    return np.where(array > threshold, max, min)
+def round_with_threshold(array, percent):
+    """Calculate the nth percentile and convert all values
+    to either 0 or 1 using that value. Common values
+    used for saliency maps are 2nd, 5th, 10th, 20th percentiles.
+    Cf. Le Meur, O., & Baccino, T. (2013). Methods for comparing
+    scanpaths and saliency maps: Strengths and weaknesses.
+    Behavior Research Methods, 45 (1), 251–266."""
+
+    value = np.percentile(array, 1)
+    return np.where(array >= value, 1, 0)
