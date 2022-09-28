@@ -26,8 +26,8 @@ if __name__ == '__main__':
     "POLYAK_UPDATE" : 0.0102, # polyak update for each iteration
     "LEARNING_RATE" : 0.00025, # learning rate for the adam
     "ENV" : "ALE/Asterix-v5", # environment name
-    "LOG_PATH_WEIGHTS" : 'asterix_test/run8/', # where to store the weights
-    "LOG_PATH_TENSORBOARD" : 'logs/asterix_test/run8/', # where to store dqn loss and reward for tensorboard
+    "LOG_PATH_WEIGHTS" : 'asterix_test/run1/', # where to store the weights
+    "LOG_PATH_TENSORBOARD" : 'logs/asterix_test/run1/', # where to store dqn loss and reward for tensorboard
     "PRELOAD_WEIGHTS" : None # path to preloaded weights
     }
 
