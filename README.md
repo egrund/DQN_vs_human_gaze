@@ -11,13 +11,14 @@ Our project is divided into four parts:
 
 1. Training a baseline DQN to play Asterix (Atari):
     * Training scripts can be found in the folder [asterix](asterix).
-    * The [weights](dqn_weights) of the best-performing model are also included.
+    * The [weights](dqn_weights/baseline) of the best-performing model are also included.
 
 2. Creating saliency maps for the baseline DQN
     * The scripts for creating saliency maps and analysing them are in [saliency](saliency).
 
 3. Giving gaze data to the DQN
     * Model files are in the folder [gaze_network](gaze_network).
+    * The weights of the [gaze prediction model](gaze_network/weights) and the weights of the [augmented DQN](dqn_weights) are also uploaded here.
 
 4. Making the learning more human like by foveating the input and focusing agent's attention on one region at a time.
     * Code can be found in the folder [asterix_with_blurr](asterix_with_blurr):
