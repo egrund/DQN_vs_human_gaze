@@ -29,5 +29,7 @@ In the root folder, there are the files for reading in and processing the gaze d
 * For reading in gaze coordinates from the Atari-HEAD files, the file [data_reader.py](data_reader.py) is used which was shared by the creators of the Atari-HEAD dataset and can be found in their [GitHub repository](https://github.com/corgiTrax/Gaze-Data-Processor).
 * The file [create_heatmaps.py](create_heatmaps.py) is used to create heatmaps for training the gaze prediction network, which is then used to augment the DQN for the third part of our project.
 
+Lastly, the report and meeting summaries are in the [report](report) folder.
+
 
 [1] Zhang, R., Walshe, C., Liu, Z., Guan, L., Muller, K. S., Whritner, J. A., Zhang, L., Hayhoe, M., & Ballard, D. (2019). *Atari-HEAD: Atari Human Eye-Tracking and Demonstration Dataset (Version 4).* Zenodo. <https://doi.org/10.5281/zenodo.3451402>
