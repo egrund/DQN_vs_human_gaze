@@ -3,7 +3,7 @@ from pympler import asizeof
 from blurrer import Blurrer
 from buffer import Buffer
 import agent
-from dqn import AgentModel
+from dqn import DQN
 from sample_trajectory import create_trajectory
 import joblib
 import tensorflow as tf 
@@ -19,7 +19,7 @@ if __name__ == '__main__':
     "USE_PRIORITIZED_REPLAY" : False, # should prioritized replay be used
     "EPSILON_DECAY" : 0.002, # how much to decay epsilon each iteration
     "EPSILON_DECAY_BLURRER" : 0.003,
-    "START_BLURRER_AT" : 25,
+    "START_BLURRER_AT" : 15,
     "INNER_ITS" : 60, # how many training steps per iteration
     "SAMPLES_FROM_ENV" : 3000, # how many new samples from the environment should be added to the buffer each iteration (in expectation)
     "TRAIN_ITS" : 12000, # how many training iterations should be done
@@ -29,8 +29,8 @@ if __name__ == '__main__':
     "POLYAK_UPDATE" : 0.0102, # polyak update for each iteration
     "LEARNING_RATE" : 0.00025, # learning rate for the adam
     "ENV" : "ALE/Asterix-v5", # environment name
-    "LOG_PATH_WEIGHTS" : 'asterix_test/run33/', # where to store the weights
-    "LOG_PATH_TENSORBOARD" : 'logs/asterix_test/run33/', # where to store dqn loss and reward for tensorboard
+    "LOG_PATH_WEIGHTS" : 'asterix_test/run34/', # where to store the weights
+    "LOG_PATH_TENSORBOARD" : 'logs/asterix_test/run34/', # where to store dqn loss and reward for tensorboard
     "PRELOAD_WEIGHTS" : None # path to preloaded weights
     }
 
@@ -38,14 +38,14 @@ if __name__ == '__main__':
     # 33 improved run 
  
     try: 
-        with open("bufferv6.pkl" , "rb") as f:
+        with open("bufferv7.pkl" , "rb") as f:
             buffer = joblib.load(f)
     except:
 
         # fill the buffer
         buffer = Buffer(params["BUFFER_SIZE"], params["BUFFER_MIN"], params["BUFFER_PATH"], params["KEEP_IN_MEM"], params["USE_PRIORITIZED_REPLAY"])
         blurrer = Blurrer()
-        model = AgentModel(9)
+        model = DQN(9)
         model(tf.random.uniform(shape=(1,84,84,4)))
         blurrer(tf.random.uniform(shape=(1,84,84,4)))
 
@@ -59,14 +59,14 @@ if __name__ == '__main__':
         while total < params["BUFFER_MIN"]:
             print("total: ",total)
         
-            data = create_trajectory(model,blurrer,10, params["INITIAL_EPSILON"], params["INITIAL_EPSILON"], params["ENV"], 4,84,84)
+            data = create_trajectory(model,blurrer,10, params["INITIAL_EPSILON"], params["INITIAL_EPSILON"], params["ENV"])
             print(len(data))
             total += len(data)
             buffer.extend(data)
             print("size of buffer in gb: ", asizeof.asizeof(buffer)/1000000000)
             print("gpu memory: ", tf.config.experimental.get_memory_info("/GPU:0"))
         
-        with open("bufferv6.pkl" , "wb") as f:
+        with open("bufferv7.pkl" , "wb") as f:
             joblib.dump(buffer,f)
 
 
