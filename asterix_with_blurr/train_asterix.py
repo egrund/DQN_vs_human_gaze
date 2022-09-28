@@ -29,16 +29,15 @@ if __name__ == '__main__':
     "POLYAK_UPDATE" : 0.0102, # polyak update for each iteration
     "LEARNING_RATE" : 0.00025, # learning rate for the adam
     "ENV" : "ALE/Asterix-v5", # environment name
-    "LOG_PATH_WEIGHTS" : 'asterix_test/run34/', # where to store the weights
-    "LOG_PATH_TENSORBOARD" : 'logs/asterix_test/run34/', # where to store dqn loss and reward for tensorboard
+    "LOG_PATH_WEIGHTS" : 'asterix_test/run1/', # where to store the weights
+    "LOG_PATH_TENSORBOARD" : 'logs/asterix_test/run1/', # where to store dqn loss and reward for tensorboard
     "PRELOAD_WEIGHTS" : None # path to preloaded weights
     }
 
-    # 28 first run 16,16,16,128
-    # 33 improved run 
+
  
     try: 
-        with open("bufferv7.pkl" , "rb") as f:
+        with open("buffer.pkl" , "rb") as f:
             buffer = joblib.load(f)
     except:
 
@@ -66,7 +65,7 @@ if __name__ == '__main__':
             print("size of buffer in gb: ", asizeof.asizeof(buffer)/1000000000)
             print("gpu memory: ", tf.config.experimental.get_memory_info("/GPU:0"))
         
-        with open("bufferv7.pkl" , "wb") as f:
+        with open("buffer.pkl" , "wb") as f:
             joblib.dump(buffer,f)
 
 
