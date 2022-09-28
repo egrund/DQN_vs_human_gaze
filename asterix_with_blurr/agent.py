@@ -52,7 +52,8 @@ class agent:
 
     def train(self,its : int,path_model_weights : str,path_logs : str):
 
-        # https://www.tensorflow.org/tensorboard/get_started
+        # (Mani Varadarajan, Billy Lamberta, William Chargin, Ryan James Walden, Asei Sugiyama, Mark Daoust, Manish Aradwad, Stanley Bileschi, zac-hopkinson), 
+        # (28.9.2022), [Source Code], https://www.tensorflow.org/tensorboard/get_started
         current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
         dqn_log_dir = path_logs + current_time + '/dqn'
         reward_log_dir = path_logs + current_time + '/reward'
