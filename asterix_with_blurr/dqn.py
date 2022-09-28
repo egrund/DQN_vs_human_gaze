@@ -77,4 +77,4 @@ class DQN(Model):
         grads = tape.gradient(loss, self.trainable_weights)
         optimizer.apply_gradients(zip(grads, self.trainable_weights))
 
-        return 
+        return loss
